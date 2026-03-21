@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financeiro | Sistema de Gestão Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body data-page="financeiro">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-area">
+      <header class="topbar" id="topbar"></header>
+      <main class="page-content">
+        <section class="page-heading">
+          <div>
+            <span class="eyebrow">Resultados</span>
+            <h1>Financeiro</h1>
+            <p>Analise gastos, vendas e lucro total ou mensal automaticamente.</p>
+          </div>
+        </section>
+
+        <section class="stats-grid" id="finance-stats"></section>
+
+        <section class="panel-grid two-columns">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Lucro mensal</h2>
+                <p>Evolução do lucro consolidado mês a mês.</p>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="financeChart"></canvas>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Resumo mensal</h2>
+                <p>Dados consolidados de entradas, saídas e lucratividade.</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mês</th>
+                    <th>Gastos</th>
+                    <th>Vendido</th>
+                    <th>Lucro</th>
+                  </tr>
+                </thead>
+                <tbody id="financeiro-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/financeiro.js"></script>
+</body>
+</html>

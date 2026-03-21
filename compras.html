@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compras | Sistema de Gestão Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="compras">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-area">
+      <header class="topbar" id="topbar"></header>
+      <main class="page-content">
+        <section class="page-heading">
+          <div>
+            <span class="eyebrow">Entradas</span>
+            <h1>Controle de compras</h1>
+            <p>Cadastre novas compras e mantenha o estoque sempre atualizado.</p>
+          </div>
+        </section>
+
+        <section class="panel-grid two-columns align-start">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Nova compra</h2>
+                <p>Preencha os dados para registrar a entrada no estoque.</p>
+              </div>
+            </div>
+            <form id="compra-form" class="form-grid">
+              <input type="hidden" id="compra-id">
+              <label><span>Produto</span><input type="text" id="produto-nome" required></label>
+              <label><span>Categoria</span><input type="text" id="produto-categoria" required></label>
+              <label><span>Valor unitário de compra</span><input type="number" id="valor-compra" step="0.01" min="0" required></label>
+              <label><span>Quantidade comprada</span><input type="number" id="quantidade-compra" min="1" required></label>
+              <label><span>Estoque mínimo</span><input type="number" id="estoque-minimo" min="0" required></label>
+              <label><span>Data da compra</span><input type="date" id="data-compra" required></label>
+              <label class="full-width"><span>Total da compra</span><input type="text" id="total-compra" readonly></label>
+              <div class="form-actions full-width">
+                <button class="btn btn-primary" type="submit">Salvar compra</button>
+                <button class="btn btn-secondary" type="button" id="cancelar-edicao-compra">Cancelar edição</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Histórico de compras</h2>
+                <p>Edite ou remova registros quando necessário.</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Qtd.</th>
+                    <th>Valor unit.</th>
+                    <th>Total</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="compras-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/compras.js"></script>
+</body>
+</html>

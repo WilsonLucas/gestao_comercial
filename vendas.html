@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendas | Sistema de Gestão Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="vendas">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-area">
+      <header class="topbar" id="topbar"></header>
+      <main class="page-content">
+        <section class="page-heading">
+          <div>
+            <span class="eyebrow">Saídas</span>
+            <h1>Controle de vendas</h1>
+            <p>Registre vendas, atualize o estoque e acompanhe o lucro por operação.</p>
+          </div>
+        </section>
+
+        <section class="panel-grid two-columns align-start">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Nova venda</h2>
+                <p>Selecione o produto disponível e informe a quantidade vendida.</p>
+              </div>
+            </div>
+            <form id="venda-form" class="form-grid">
+              <input type="hidden" id="venda-id">
+              <label><span>Produto</span><select id="venda-produto" required></select></label>
+              <label><span>Quantidade vendida</span><input type="number" id="venda-quantidade" min="1" required></label>
+              <label><span>Valor unitário de venda</span><input type="number" id="venda-valor" step="0.01" min="0" required></label>
+              <label><span>Data da venda</span><input type="date" id="venda-data" required></label>
+              <label><span>Estoque disponível</span><input type="text" id="venda-estoque" readonly></label>
+              <label><span>Total da venda</span><input type="text" id="venda-total" readonly></label>
+              <label class="full-width"><span>Lucro estimado da venda</span><input type="text" id="venda-lucro" readonly></label>
+              <div class="form-actions full-width">
+                <button class="btn btn-primary" type="submit">Salvar venda</button>
+                <button class="btn btn-secondary" type="button" id="cancelar-edicao-venda">Cancelar edição</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Histórico de vendas</h2>
+                <p>Acompanhe cada venda realizada e sua rentabilidade.</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Produto</th>
+                    <th>Qtd.</th>
+                    <th>Preço unit.</th>
+                    <th>Total</th>
+                    <th>Lucro</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="vendas-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/vendas.js"></script>
+</body>
+</html>

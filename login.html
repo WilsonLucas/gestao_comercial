@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Sistema de Gestão Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="login-body" data-page="login">
+  <main class="login-wrapper">
+    <section class="login-card brand-panel">
+      <div>
+        <span class="eyebrow">Controle completo</span>
+        <h1>Sistema de Gestão Comercial</h1>
+        <p>Gerencie compras, vendas, estoque, lucro e usuários em um dashboard moderno, sem backend.</p>
+      </div>
+      <ul class="feature-list">
+        <li>Persistência local com <strong>localStorage</strong></li>
+        <li>Indicadores automáticos de lucro mensal</li>
+        <li>Alertas visuais para estoque baixo</li>
+      </ul>
+    </section>
+
+    <section class="login-card form-panel">
+      <div class="login-header">
+        <h2>Entrar</h2>
+        <p>Use o administrador padrão para o primeiro acesso.</p>
+      </div>
+      <form id="login-form" class="form-grid form-single">
+        <label>
+          <span>E-mail</span>
+          <input type="email" id="login-email" placeholder="admin@admin.com" required>
+        </label>
+        <label>
+          <span>Senha</span>
+          <input type="password" id="login-password" placeholder="123456" required>
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Acessar sistema</button>
+      </form>
+      <div class="default-access">
+        <strong>Acesso inicial:</strong>
+        <span>admin@admin.com / [senha]</span>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>

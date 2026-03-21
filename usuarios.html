@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuários | Sistema de Gestão Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="usuarios">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-area">
+      <header class="topbar" id="topbar"></header>
+      <main class="page-content">
+        <section class="page-heading">
+          <div>
+            <span class="eyebrow">Acesso</span>
+            <h1>Gerenciamento de usuários</h1>
+            <p>Cadastre, edite ou remova usuários do sistema com perfis de acesso.</p>
+          </div>
+        </section>
+
+        <section class="panel-grid two-columns align-start">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Novo usuário</h2>
+                <p>Crie usuários locais para acesso ao sistema.</p>
+              </div>
+            </div>
+            <form id="usuario-form" class="form-grid">
+              <input type="hidden" id="usuario-id">
+              <label><span>Nome</span><input type="text" id="usuario-nome" required></label>
+              <label><span>E-mail</span><input type="email" id="usuario-email" required></label>
+              <label><span>Senha</span><input type="password" id="usuario-senha" required></label>
+              <label><span>Perfil</span>
+                <select id="usuario-perfil" required>
+                  <option value="Administrador">Administrador</option>
+                  <option value="Operador">Operador</option>
+                  <option value="Financeiro">Financeiro</option>
+                </select>
+              </label>
+              <div class="form-actions full-width">
+                <button class="btn btn-primary" type="submit">Salvar usuário</button>
+                <button class="btn btn-secondary" type="button" id="cancelar-edicao-usuario">Cancelar edição</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Usuários cadastrados</h2>
+                <p>Admin padrão é criado automaticamente no primeiro acesso.</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Perfil</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="usuarios-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/usuarios.js"></script>
+</body>
+</html>
