@@ -2,16 +2,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (document.body.dataset.page !== 'dashboard') return;
 
   try {
-    const dados = await API.get('/dashboard');
-    const m = dados.metricas;
+    const [{ data: metricas }, { data: vendasRaw }, { data: comprasRaw }] = await Promise.all([
+      db.rpc('dashboard_metrics'),
+      db.from('vendas').select('data, total, lucro, criado_em, itens_venda(quantidade, produtos(nome))').order('criado_em', { ascending: false }),
+      db.from('compras').select('data, total').order('data')
+    ]);
 
+    const m = metricas || {};
     const stats = [
-      ['Total gasto', App.formatCurrency(m.total_gasto), 'Compras registradas no sistema'],
-      ['Total vendido', App.formatCurrency(m.total_vendido), 'Receita bruta acumulada'],
-      ['Lucro total', App.formatCurrency(m.lucro_total), 'Resultado liquido das vendas'],
-      ['Lucro do mes', App.formatCurrency(m.lucro_mes), 'Apurado no mes atual'],
-      ['Quantidade de vendas', m.quantidade_vendas, 'Operacoes concluidas'],
-      ['Estoque baixo', m.estoque_baixo, 'Ingredientes exigindo atencao']
+      ['Lucro do mes', App.formatCurrency(m.lucro_mes), 'Resultado liquido do mes atual'],
+      ['Total vendido', App.formatCurrency(m.vendido_mes), 'Receita bruta do mes atual'],
+      ['Total gasto', App.formatCurrency(m.gasto_mes), 'Compras registradas no mes'],
+      ['Estoque critico', m.estoque_critico ?? 0, 'Ingredientes exigindo atencao']
     ];
 
     document.getElementById('dashboard-stats').innerHTML = stats.map(([label, value, trend]) => `
@@ -22,22 +24,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       </article>
     `).join('');
 
+    const ultimasVendas = (vendasRaw || []).slice(0, 5);
     const tbody = document.getElementById('latest-sales-body');
-    const ultimasVendas = dados.ultimas_vendas || [];
     tbody.innerHTML = ultimasVendas.length ? ultimasVendas.map((venda) => {
-      const itensStr = (venda.itens || []).map((i) => `${i.produto_nome} x${i.quantidade}`).join(', ');
+      const itensStr = (venda.itens_venda || []).map((i) => `${i.produtos?.nome} x${i.quantidade}`).join(', ');
       return `
         <tr>
           <td>${App.formatDate(venda.data)}</td>
           <td>${itensStr || '-'}</td>
-          <td>-</td>
           <td>${App.formatCurrency(venda.total)}</td>
           <td class="metric-positive">${App.formatCurrency(venda.lucro)}</td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="5" class="empty-state">Nenhuma venda cadastrada.</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="empty-state">Nenhuma venda cadastrada.</td></tr>';
 
-    const monthly = dados.desempenho_mensal || [];
+    // Resumo mensal para grafico
+    const mapaVendas = {};
+    (vendasRaw || []).forEach((v) => {
+      const k = App.monthKey(v.data);
+      if (!mapaVendas[k]) mapaVendas[k] = { mes: k, vendido: 0, lucro: 0, gasto: 0 };
+      mapaVendas[k].vendido += Number(v.total);
+      mapaVendas[k].lucro += Number(v.lucro);
+    });
+    (comprasRaw || []).forEach((c) => {
+      const k = App.monthKey(c.data);
+      if (!mapaVendas[k]) mapaVendas[k] = { mes: k, vendido: 0, lucro: 0, gasto: 0 };
+      mapaVendas[k].gasto += Number(c.total);
+    });
+    const monthly = Object.values(mapaVendas).sort((a, b) => a.mes.localeCompare(b.mes));
+
     const ctx = document.getElementById('dashboardChart');
     if (ctx && typeof Chart !== 'undefined') {
       new Chart(ctx, {
@@ -45,15 +60,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         data: {
           labels: monthly.map((item) => App.formatMonth(item.mes)),
           datasets: [
-            { label: 'Gastos', data: monthly.map((item) => item.gasto), backgroundColor: '#c7d2fe' },
-            { label: 'Vendas', data: monthly.map((item) => item.vendido), backgroundColor: '#60a5fa' },
-            { label: 'Lucro', data: monthly.map((item) => item.lucro), type: 'line', borderColor: '#0f9f6e', backgroundColor: '#0f9f6e', tension: 0.3 }
+            { label: 'Gastos',  data: monthly.map((i) => i.gasto),   backgroundColor: '#c7d2fe' },
+            { label: 'Vendas',  data: monthly.map((i) => i.vendido), backgroundColor: '#60a5fa' },
+            { label: 'Lucro',   data: monthly.map((i) => i.lucro),   type: 'line', borderColor: '#0f9f6e', backgroundColor: '#0f9f6e', tension: 0.3 }
           ]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
     }
   } catch (err) {
-    App.showToast(err?.erro || 'Erro ao carregar dashboard.', 'error');
+    App.showToast('Erro ao carregar dashboard.', 'error');
   }
 });

@@ -19,13 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const senha = document.getElementById('login-password').value.trim();
 
       try {
-        const resposta = await API.post('/auth/login', { email, senha });
-        localStorage.setItem('sgc_token', resposta.token);
-        localStorage.setItem('sgc_usuario', JSON.stringify(resposta.usuario));
+        const { data, error } = await db.rpc('autenticar', { p_email: email, p_senha: senha });
+        if (error || data?.erro) throw new Error(data?.erro || 'Erro ao autenticar');
+        localStorage.setItem('sgc_user', JSON.stringify(data));
         App.showToast('Login realizado com sucesso!');
         setTimeout(() => window.location.replace('dashboard.html'), 600);
       } catch (err) {
-        App.showToast(err?.erro || 'E-mail ou senha invalidos.', 'error');
+        App.showToast(err?.message || 'E-mail ou senha invalidos.', 'error');
       }
     });
   }

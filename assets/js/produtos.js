@@ -6,12 +6,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   let ingredientesCache = [];
 
   async function carregarIngredientes() {
-    try {
-      ingredientesCache = await API.get('/ingredientes');
-      return ingredientesCache;
-    } catch {
-      return [];
-    }
+    const { data } = await db.from('ingredientes').select('id, nome, unidade').order('nome');
+    ingredientesCache = data || [];
+    return ingredientesCache;
   }
 
   function renderFichaTecnica(ficha = []) {
@@ -39,26 +36,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function renderTable() {
     const tbody = document.getElementById('produtos-body');
-    try {
-      const lista = await API.get('/produtos');
-      tbody.innerHTML = lista.length ? lista.map((item) => `
-        <tr>
-          <td>${item.nome}</td>
-          <td>${App.formatCurrency(item.preco_venda)}</td>
-          <td>${(item.ficha_tecnica || []).length} ingrediente(s)</td>
-          <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
-          <td>
-            <div class="actions">
-              <button class="btn btn-secondary" data-edit="${item.id}">Editar</button>
-              <button class="btn btn-danger" data-delete="${item.id}">Inativar</button>
-            </div>
-          </td>
-        </tr>
-      `).join('') : '<tr><td colspan="5" class="empty-state">Nenhum produto cadastrado.</td></tr>';
-    } catch (err) {
+    const { data: lista, error } = await db
+      .from('produtos')
+      .select('id, nome, preco_venda, ativo, ficha_tecnica(id, quantidade, ingredientes(id, nome, unidade, preco_compra))')
+      .order('nome');
+
+    if (error) {
       tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar produtos.</td></tr>';
-      App.showToast(err?.erro || 'Erro ao carregar produtos.', 'error');
+      App.showToast('Erro ao carregar produtos.', 'error');
+      return;
     }
+
+    tbody.innerHTML = (lista || []).length ? (lista || []).map((item) => `
+      <tr>
+        <td>${item.nome}</td>
+        <td>${App.formatCurrency(item.preco_venda)}</td>
+        <td>${(item.ficha_tecnica || []).length} ingrediente(s)</td>
+        <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-secondary" data-edit="${item.id}">Editar</button>
+            <button class="btn btn-danger" data-delete="${item.id}">Inativar</button>
+          </div>
+        </td>
+      </tr>
+    `).join('') : '<tr><td colspan="5" class="empty-state">Nenhum produto cadastrado.</td></tr>';
   }
 
   function resetForm() {
@@ -69,8 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('adicionar-ingrediente')?.addEventListener('click', () => {
     const ficha = getFichaTecnica();
-    const primeiroIngrediente = ingredientesCache[0];
-    ficha.push({ ingrediente_id: primeiroIngrediente?.id || '', quantidade: 1 });
+    ficha.push({ ingrediente_id: ingredientesCache[0]?.id || '', quantidade: 1 });
     renderFichaTecnica(ficha);
   });
 
@@ -86,24 +87,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const id = idInput.value;
-    const payload = {
-      nome: document.getElementById('produto-nome').value.trim(),
-      preco_venda: Number(document.getElementById('produto-preco').value),
-      ficha_tecnica: getFichaTecnica()
-    };
+    const nome = document.getElementById('produto-nome').value.trim();
+    const preco_venda = Number(document.getElementById('produto-preco').value);
+    const ficha = getFichaTecnica();
 
     try {
+      let produtoId = id;
+
       if (id) {
-        await API.put(`/produtos/${id}`, payload);
-        App.showToast('Produto atualizado com sucesso.');
+        const { error } = await db.from('produtos').update({ nome, preco_venda }).eq('id', id);
+        if (error) throw error;
+        await db.from('ficha_tecnica').delete().eq('produto_id', id);
       } else {
-        await API.post('/produtos', payload);
-        App.showToast('Produto cadastrado com sucesso.');
+        const { data, error } = await db.from('produtos').insert({ nome, preco_venda }).select('id').single();
+        if (error) throw error;
+        produtoId = data.id;
       }
+
+      if (ficha.length > 0) {
+        const { error } = await db.from('ficha_tecnica').insert(
+          ficha.map((f) => ({ produto_id: produtoId, ingrediente_id: f.ingrediente_id, quantidade: f.quantidade }))
+        );
+        if (error) throw error;
+      }
+
+      App.showToast(id ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.');
       resetForm();
       renderTable();
     } catch (err) {
-      App.showToast(err?.erro || 'Erro ao salvar produto.', 'error');
+      App.showToast(err?.message || 'Erro ao salvar produto.', 'error');
     }
   });
 
@@ -112,28 +124,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const deleteId = event.target.dataset.delete;
 
     if (editId) {
-      try {
-        const lista = await API.get('/produtos');
-        const item = lista.find((p) => p.id === editId);
-        if (!item) return;
-        idInput.value = item.id;
-        document.getElementById('produto-nome').value = item.nome;
-        document.getElementById('produto-preco').value = item.preco_venda;
-        renderFichaTecnica(item.ficha_tecnica || []);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (err) {
-        App.showToast('Erro ao carregar produto.', 'error');
-      }
+      const { data: item } = await db
+        .from('produtos')
+        .select('id, nome, preco_venda, ficha_tecnica(quantidade, ingrediente_id)')
+        .eq('id', editId)
+        .single();
+      if (!item) return;
+      idInput.value = item.id;
+      document.getElementById('produto-nome').value = item.nome;
+      document.getElementById('produto-preco').value = item.preco_venda;
+      renderFichaTecnica(item.ficha_tecnica || []);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     if (deleteId) {
-      try {
-        await API.delete(`/produtos/${deleteId}`);
-        App.showToast('Produto inativado com sucesso.', 'warning');
-        renderTable();
-      } catch (err) {
-        App.showToast(err?.erro || 'Erro ao inativar produto.', 'error');
-      }
+      const { error } = await db.from('produtos').update({ ativo: false }).eq('id', deleteId);
+      if (error) { App.showToast('Erro ao inativar produto.', 'error'); return; }
+      App.showToast('Produto inativado com sucesso.', 'warning');
+      renderTable();
     }
   });
 

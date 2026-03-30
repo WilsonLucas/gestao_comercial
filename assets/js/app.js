@@ -30,24 +30,19 @@ const App = (() => {
 
   function getUsuario() {
     try {
-      return JSON.parse(localStorage.getItem('sgc_usuario') || 'null');
+      return JSON.parse(localStorage.getItem('sgc_user') || 'null');
     } catch {
       return null;
     }
   }
 
-  function getToken() {
-    return localStorage.getItem('sgc_token');
-  }
-
   function logout() {
-    localStorage.removeItem('sgc_token');
-    localStorage.removeItem('sgc_usuario');
+    localStorage.removeItem('sgc_user');
     window.location.href = 'login.html';
   }
 
   function isLoggedIn() {
-    return Boolean(getToken() && getUsuario());
+    return Boolean(getUsuario());
   }
 
   const today = () => new Date().toISOString().split('T')[0];
@@ -133,7 +128,6 @@ const App = (() => {
     showToast,
     calcularStatus,
     getUsuario,
-    getToken,
     isLoggedIn,
     logout,
     renderAppShell

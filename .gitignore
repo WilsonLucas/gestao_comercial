@@ -1,9 +1,11 @@
-# Dependências
+# Dependencias
 node_modules/
 
-# Variáveis de ambiente (NUNCA commitar)
+# Variaveis de ambiente (NUNCA commitar)
 .env
-backend/.env
+
+# Supabase client com credenciais reais (nao commitar se repo for publico)
+# assets/js/supabase-client.js
 
 # Logs
 *.log

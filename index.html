@@ -6,9 +6,8 @@
   <title>Sistema de Gestao Comercial</title>
   <script>
     (function redirect() {
-      const token = localStorage.getItem('sgc_token');
-      const usuario = localStorage.getItem('sgc_usuario');
-      window.location.replace(token && usuario ? 'dashboard.html' : 'login.html');
+      const usuario = localStorage.getItem('sgc_user');
+      window.location.replace(usuario ? 'dashboard.html' : 'login.html');
     }());
   </script>
 </head>

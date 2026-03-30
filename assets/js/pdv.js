@@ -5,15 +5,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let produtosCache = [];
 
   async function carregarProdutos() {
-    try {
-      produtosCache = await API.get('/produtos');
-      const select = document.getElementById('pdv-produto');
-      if (select) {
-        select.innerHTML = '<option value="">Selecione um produto</option>' +
-          produtosCache.map((p) => `<option value="${p.id}">${p.nome} - ${App.formatCurrency(p.preco_venda)}</option>`).join('');
-      }
-    } catch (err) {
-      App.showToast('Erro ao carregar produtos.', 'error');
+    const { data } = await db.from('produtos').select('id, nome, preco_venda').eq('ativo', true).order('nome');
+    produtosCache = data || [];
+    const select = document.getElementById('pdv-produto');
+    if (select) {
+      select.innerHTML = '<option value="">Selecione um produto</option>' +
+        produtosCache.map((p) => `<option value="${p.id}">${p.nome} - ${App.formatCurrency(p.preco_venda)}</option>`).join('');
     }
   }
 
@@ -49,10 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const produtoId = select?.value;
     const quantidade = Number(qtdInput?.value) || 1;
 
-    if (!produtoId) {
-      App.showToast('Selecione um produto.', 'error');
-      return;
-    }
+    if (!produtoId) { App.showToast('Selecione um produto.', 'error'); return; }
 
     const produto = produtosCache.find((p) => p.id === produtoId);
     if (!produto) return;
@@ -88,16 +82,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    const user = App.getUsuario();
     const itens = carrinho.map((item) => ({ produto_id: item.produto_id, quantidade: item.quantidade }));
 
-    try {
-      await API.post('/vendas', { itens });
-      App.showToast('Venda finalizada com sucesso!');
-      carrinho = [];
-      renderCarrinho();
-    } catch (err) {
-      App.showToast(err?.erro || 'Erro ao finalizar venda.', 'error');
+    const { data, error } = await db.rpc('fechar_venda', {
+      p_itens: JSON.stringify(itens),
+      p_operador_id: user?.id
+    });
+
+    if (error || data?.erro) {
+      App.showToast(data?.erro || 'Erro ao finalizar venda.', 'error');
+      return;
     }
+
+    App.showToast(`Venda finalizada! Total: ${App.formatCurrency(data.total)}`);
+    carrinho = [];
+    renderCarrinho();
   });
 
   await carregarProdutos();

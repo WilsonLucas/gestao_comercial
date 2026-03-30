@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function renderTable() {
     const tbody = document.getElementById('ingredientes-body');
     try {
-      const lista = await API.get('/ingredientes');
+      const { data: lista, error } = await db.from('ingredientes').select('*').order('nome');
+      if (error) throw error;
       tbody.innerHTML = lista.length ? lista.map((item) => {
         const status = App.calcularStatus(item);
         return `
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }).join('') : '<tr><td colspan="7" class="empty-state">Nenhum ingrediente cadastrado.</td></tr>';
     } catch (err) {
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Erro ao carregar ingredientes.</td></tr>';
-      App.showToast(err?.erro || 'Erro ao carregar ingredientes.', 'error');
+      App.showToast('Erro ao carregar ingredientes.', 'error');
     }
   }
 
@@ -51,16 +52,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       if (id) {
-        await API.put(`/ingredientes/${id}`, payload);
+        const { error } = await db.from('ingredientes').update(payload).eq('id', id);
+        if (error) throw error;
         App.showToast('Ingrediente atualizado com sucesso.');
       } else {
-        await API.post('/ingredientes', payload);
+        const { error } = await db.from('ingredientes').insert(payload);
+        if (error) throw error;
         App.showToast('Ingrediente cadastrado com sucesso.');
       }
       resetForm();
       renderTable();
     } catch (err) {
-      App.showToast(err?.erro || 'Erro ao salvar ingrediente.', 'error');
+      App.showToast(err?.message || 'Erro ao salvar ingrediente.', 'error');
     }
   });
 
@@ -70,9 +73,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (editId) {
       try {
-        const lista = await API.get('/ingredientes');
-        const item = lista.find((i) => i.id === editId);
-        if (!item) return;
+        const { data: item, error } = await db.from('ingredientes').select('*').eq('id', editId).single();
+        if (error) throw error;
         idInput.value = item.id;
         document.getElementById('ingrediente-nome').value = item.nome;
         document.getElementById('ingrediente-unidade').value = item.unidade;
@@ -87,11 +89,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (deleteId) {
       try {
-        await API.delete(`/ingredientes/${deleteId}`);
+        const { error } = await db.from('ingredientes').delete().eq('id', deleteId);
+        if (error) throw error;
         App.showToast('Ingrediente excluido com sucesso.', 'warning');
         renderTable();
       } catch (err) {
-        App.showToast(err?.erro || 'Erro ao excluir ingrediente.', 'error');
+        App.showToast(err?.message || 'Erro ao excluir ingrediente.', 'error');
       }
     }
   });
