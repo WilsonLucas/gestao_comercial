@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historico do Dia | Sistema de Gestao Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="historico-dia">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-area">
+      <header class="topbar" id="topbar"></header>
+      <main class="page-content">
+        <section class="page-heading">
+          <div>
+            <span class="eyebrow">Hoje</span>
+            <h1>Historico do Dia</h1>
+            <p>Vendas realizadas hoje com resumo de total e lucro.</p>
+          </div>
+        </section>
+
+        <section class="stats-grid">
+          <article class="stat-card">
+            <div class="label">Total vendido hoje</div>
+            <div class="value" id="historico-total">R$ 0,00</div>
+            <div class="trend">Receita do dia</div>
+          </article>
+          <article class="stat-card">
+            <div class="label">Lucro do dia</div>
+            <div class="value metric-positive" id="historico-lucro">R$ 0,00</div>
+            <div class="trend">Resultado liquido</div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Vendas de hoje</h2>
+              <p>Detalhamento de cada venda realizada no dia.</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Itens vendidos</th>
+                  <th>Total</th>
+                  <th>Lucro</th>
+                </tr>
+              </thead>
+              <tbody id="historico-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/historico-dia.js"></script>
+</body>
+</html>

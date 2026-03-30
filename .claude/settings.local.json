@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:romullo-dev.github.io)",
+      "Bash(git clone:*)",
+      "Bash(gh repo:*)"
+    ]
+  }
+}
