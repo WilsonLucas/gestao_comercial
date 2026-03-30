@@ -15,7 +15,7 @@ Por favor, respondam cada ponto para que possamos avançar.
 |---|---|---|---|
 | P1 | **Nome do sistema** — como o sistema será chamado? (ex: "GestãoPro", "Minha Gestão", nome da pastelaria…) | Sócios | ⏳ Aguardando |
 | P2 | **Logo do sistema** — existe algum logo ou identidade visual definida? | Sócios | ⏳ Aguardando |
-| P3 | **Nome e e-mail do administrador padrão** — quem será o primeiro usuário admin criado no sistema? | Sócios | ⏳ Aguardando |
+| P3 | **Usuários padrão** — 4 usuários criados automaticamente (um por perfil), todos com senha padrão | Devs | ✅ Definido |
 | P4 | **Quais são os produtos vendidos na pastelaria?** — precisamos de uma lista inicial (nome + preço de venda) para configurar o sistema | Sócios | ⏳ Aguardando |
 | P5 | **Quais são os ingredientes utilizados?** — lista dos insumos com unidade de medida (kg, unidade, litro…) e preço aproximado de compra | Sócios | ⏳ Aguardando |
 | P6 | **Ficha técnica dos produtos** — quais ingredientes e em quais quantidades compõem cada produto? (ex: "Pastel de Frango usa 1 unidade de massa, 100g de frango, 50g de queijo") | Sócios | ⏳ Aguardando |
