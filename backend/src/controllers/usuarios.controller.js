@@ -1,7 +1,12 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/database');
 
-const ADMIN_EMAIL = 'admin@admin.com';
+const EMAILS_PROTEGIDOS = [
+  'admin@admin.com',
+  'financeiro@admin.com',
+  'estoque@admin.com',
+  'operador@admin.com',
+];
 
 async function listar(req, res) {
   try {
@@ -87,8 +92,8 @@ async function remover(req, res) {
       return res.status(404).json({ erro: 'Usuario nao encontrado.' });
     }
 
-    if (usuarioResult.rows[0].email === ADMIN_EMAIL) {
-      return res.status(403).json({ erro: 'O usuario administrador padrao nao pode ser removido.' });
+    if (EMAILS_PROTEGIDOS.includes(usuarioResult.rows[0].email)) {
+      return res.status(403).json({ erro: 'Usuarios padrao do sistema nao podem ser removidos.' });
     }
 
     await pool.query('UPDATE usuarios SET ativo = false WHERE id = $1', [id]);

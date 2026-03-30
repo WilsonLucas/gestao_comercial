@@ -9,15 +9,26 @@ async function seed() {
     await client.query('BEGIN');
 
     const senhaHash = await bcrypt.hash('123456', 10);
-    const adminResult = await client.query(
-      `INSERT INTO usuarios (nome, email, senha_hash, perfil)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome
-       RETURNING id`,
-      ['Administrador', 'admin@admin.com', senhaHash, 'administrador']
-    );
-    const adminId = adminResult.rows[0].id;
-    console.log('Usuario admin criado/atualizado:', adminId);
+
+    const usuarios = [
+      ['Administrador', 'admin@admin.com',       senhaHash, 'administrador'],
+      ['Financeiro',    'financeiro@admin.com',   senhaHash, 'financeiro'],
+      ['Estoque',       'estoque@admin.com',       senhaHash, 'estoque'],
+      ['Operador',      'operador@admin.com',      senhaHash, 'operador'],
+    ];
+
+    let adminId;
+    for (const [nome, email, hash, perfil] of usuarios) {
+      const result = await client.query(
+        `INSERT INTO usuarios (nome, email, senha_hash, perfil)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome
+         RETURNING id`,
+        [nome, email, hash, perfil]
+      );
+      if (perfil === 'administrador') adminId = result.rows[0].id;
+    }
+    console.log('Usuarios padrao criados/atualizados.');
 
     const massaResult = await client.query(
       `INSERT INTO ingredientes (nome, unidade, preco_compra, estoque_atual, estoque_minimo)
