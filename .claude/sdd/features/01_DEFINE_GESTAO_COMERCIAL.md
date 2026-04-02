@@ -2,7 +2,7 @@
 
 **Fase:** 1 — Requisitos
 **Data:** 2026-03-29
-**Status:** Aprovado para /projetar
+**Status:** Aprovado — arquitetura concluída
 **Score de Clareza:** 14/15
 **Origem:** BRAINSTORM_GESTAO_COMERCIAL.md
 
@@ -270,15 +270,11 @@ controle real de acesso por perfil e não existe o conceito de ficha técnica
 
 ## 12. Mapa do Workflow
 
-```
-✅ Fase 0: /explorar   → BRAINSTORM_GESTAO_COMERCIAL.md
-✅ Fase 1: /definir    → 01_DEFINE_GESTAO_COMERCIAL.md  ← CONCLUÍDA
-➡️ Fase 2: /projetar  → 02_DESIGN_GESTAO_COMERCIAL.md
-⬜ Fase 3: /construir
-⬜ Fase 4: /entregar
-```
-
-**Próximo passo:**
-```
-/projetar .claude/sdd/features/01_DEFINE_GESTAO_COMERCIAL.md
-```
+| Fase | Documento | Status |
+|---|---|---|
+| Fase 0 — Exploração | BRAINSTORM_GESTAO_COMERCIAL.md | ✅ Concluído |
+| Fase 1 — Requisitos | 01_DEFINE_GESTAO_COMERCIAL.md | ✅ Concluído |
+| Fase 2 — Arquitetura | 02_DESIGN_GESTAO_COMERCIAL.md | ✅ Concluído |
+| Fase 3 — Desenvolvimento | BUILD_REPORT_GESTAO_COMERCIAL.md | ✅ Concluído |
+| Deploy | Netlify + Supabase | ✅ Sistema no ar |
+| Fase 4 — Entrega | Aguardando testes da equipe | ⏳ Em andamento |

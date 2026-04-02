@@ -3,6 +3,10 @@ node_modules/
 
 # Variaveis de ambiente (NUNCA commitar)
 .env
+.env.local
+
+# Memoria interna dos agentes (uso exclusivo dos devs)
+.claude/projects/
 
 # Supabase client com credenciais reais (nao commitar se repo for publico)
 # assets/js/supabase-client.js

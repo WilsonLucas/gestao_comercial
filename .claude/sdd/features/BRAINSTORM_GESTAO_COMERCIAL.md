@@ -1,7 +1,7 @@
 # BRAINSTORM — Sistema de Gestão Comercial (Pastelaria Piloto)
 
 **Data:** 2026-03-29
-**Status:** Concluído — pronto para /definir
+**Status:** Concluído
 **Participantes:** 2 devs (1 engenheiro de dados + 1 dev JS) + 2 stakeholders de negócio
 
 ---
@@ -164,8 +164,5 @@ O protótipo existente serve como base para o design da UI:
 
 ## Próximo Passo
 
-```
-/definir .claude/sdd/features/BRAINSTORM_GESTAO_COMERCIAL.md
-```
-
-Isso vai capturar os requisitos formais por perfil, regras de negócio e critérios de aceite.
+Capturar os requisitos formais por perfil, regras de negócio e critérios de aceite.
+Documento gerado: `01_DEFINE_GESTAO_COMERCIAL.md`
