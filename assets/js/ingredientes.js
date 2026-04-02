@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const status = App.calcularStatus(item);
         return `
           <tr class="${status.status === 'critico' ? 'table-row-critical' : ''}">
-            <td>${item.nome}</td>
-            <td>${item.unidade}</td>
+            <td>${App.escapeHtml(item.nome)}</td>
+            <td>${App.escapeHtml(item.unidade)}</td>
             <td>${Number(item.estoque_atual).toFixed(3)}</td>
             <td>${Number(item.estoque_minimo).toFixed(3)}</td>
             <td>${App.formatCurrency(item.preco_compra)}</td>
@@ -107,6 +107,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (deleteId) {
+      const confirmado = await App.confirmar('Excluir este ingrediente? Esta acao nao pode ser desfeita.');
+      if (!confirmado) return;
+      App.setLoading(event.target, true);
       try {
         const { error } = await db.from('ingredientes').delete().eq('id', deleteId);
         if (error) throw error;
@@ -114,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable();
       } catch (err) {
         App.showToast(err?.message || 'Erro ao excluir ingrediente.', 'error');
+        App.setLoading(event.target, false);
       }
     }
   });

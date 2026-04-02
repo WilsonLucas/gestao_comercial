@@ -55,8 +55,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const custoItem = Number(f.ingredientes?.preco_compra || 0) * Number(f.quantidade);
         return `
           <tr class="ficha-detalhe-row">
-            <td>${f.ingredientes?.nome || '-'}</td>
-            <td>${f.ingredientes?.unidade || '-'}</td>
+            <td>${App.escapeHtml(f.ingredientes?.nome || '-')}</td>
+            <td>${App.escapeHtml(f.ingredientes?.unidade || '-')}</td>
             <td>${Number(f.quantidade).toFixed(3)}</td>
             <td>${App.formatCurrency(f.ingredientes?.preco_compra || 0)}</td>
             <td>${App.formatCurrency(custoItem)}</td>
@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       return `
         <tr>
-          <td>${item.nome}</td>
-          <td><span class="badge categoria-badge">${item.categoria || '—'}</span></td>
+          <td>${App.escapeHtml(item.nome)}</td>
+          <td><span class="badge categoria-badge">${App.escapeHtml(item.categoria || '—')}</span></td>
           <td>${App.formatCurrency(item.preco_venda)}</td>
           <td>${ficha.length} ingrediente(s)</td>
           <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
@@ -299,8 +299,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (deleteId) {
+      const confirmado = await App.confirmar('Inativar este produto? Ele nao aparecera mais no PDV.');
+      if (!confirmado) return;
+      App.setLoading(event.target, true);
       const { error } = await db.from('produtos').update({ ativo: false }).eq('id', deleteId);
-      if (error) { App.showToast('Erro ao inativar produto.', 'error'); return; }
+      if (error) {
+        App.showToast('Erro ao inativar produto.', 'error');
+        App.setLoading(event.target, false);
+        return;
+      }
       App.showToast('Produto inativado com sucesso.', 'warning');
       carregarProdutos();
     }

@@ -1,7 +1,8 @@
 # RELATORIO DE BUILD: Gestao Comercial
 
-**Data:** 01/04/2026
-**Status:** SISTEMA NO AR
+**Data inicial:** 01/04/2026
+**Revisao de seguranca:** 02/04/2026
+**Status:** SISTEMA NO AR + CORRECOES DE SEGURANCA APLICADAS
 
 ---
 
@@ -9,11 +10,9 @@
 
 | Metrica | Valor |
 |---------|-------|
-| Fases concluidas | Build + Migracao Supabase + Deploy |
-| Arquivos JS migrados | 11 |
-| HTMLs atualizados | 10 |
-| Arquivos removidos (backend Node.js) | 29 |
-| Arquivos criados (Supabase) | 4 |
+| Fases concluidas | Build + Migracao Supabase + Deploy + Revisao de Seguranca |
+| Arquivos JS corrigidos (revisao) | 7 |
+| Migration SQL criada (revisao) | 1 (003_security_hardening.sql) |
 | Frontend hospedado | Netlify |
 | Banco de dados | Supabase (PostgreSQL) |
 
@@ -22,19 +21,6 @@
 ## Fase 1 — Build Inicial (Node.js + Express)
 
 Sistema construido inicialmente com backend Node.js + Express + PostgreSQL.
-
-### Backend criado e posteriormente removido
-
-| Arquivo | Proposito |
-|---------|-----------|
-| `backend/package.json` | Dependencias e scripts npm |
-| `backend/src/app.js` | Entry point Express |
-| `backend/src/config/database.js` | Pool de conexao PostgreSQL |
-| `backend/src/middleware/auth.js` | Verificacao JWT |
-| `backend/src/middleware/roles.js` | Autorizacao por perfil |
-| `backend/src/db/migrations/001_schema_inicial.sql` | Schema completo |
-| `backend/src/controllers/*.controller.js` | 8 controllers |
-| `backend/src/routes/*.routes.js` | 8 arquivos de rotas |
 
 > Backend removido integralmente na Fase 2 (migracao para Supabase).
 
@@ -45,84 +31,77 @@ Sistema construido inicialmente com backend Node.js + Express + PostgreSQL.
 **Motivo:** Impossibilidade de hospedar backend Node.js no GitHub Pages.
 **Solucao:** Migrar toda a logica para Supabase (PostgreSQL + RPC functions), mantendo o frontend como HTML/CSS/JS puro.
 
-### Arquivos criados
+### RPC Functions no banco
 
-| Arquivo | Proposito |
-|---------|-----------|
-| `supabase/migrations/001_schema_supabase.sql` | Schema completo com 7 tabelas e 5 RPC functions |
-| `supabase/seed.sql` | 4 usuarios padrao + dados de exemplo da pastelaria |
-| `assets/js/supabase-client.js` | Inicializacao do SDK Supabase via CDN |
-| `.nojekyll` | Compatibilidade com GitHub Pages |
-| `SUPABASE_SETUP.md` | Guia de configuracao do Supabase |
-
-### RPC Functions no banco (substituem os controllers)
-
-| Funcao | Equivalente anterior |
-|--------|----------------------|
-| `autenticar(p_email, p_senha)` | POST /api/auth/login |
-| `criar_usuario(p_nome, p_email, p_senha, p_perfil)` | POST /api/usuarios |
-| `alterar_senha(p_usuario_id, p_nova_senha)` | PUT /api/usuarios/:id |
-| `fechar_venda(p_itens, p_operador_id)` | POST /api/vendas (atomico) |
-| `dashboard_metrics()` | GET /api/dashboard |
-
-### Arquivos JS migrados (API → Supabase)
-
-| Arquivo | Mudanca principal |
-|---------|-------------------|
-| `assets/js/app.js` | Sessao via `sgc_user` no localStorage (antes: JWT) |
-| `assets/js/auth.js` | Login via `db.rpc('autenticar')` (antes: POST /api/auth/login) |
-| `assets/js/dashboard.js` | `db.rpc('dashboard_metrics')` + joins via Supabase |
-| `assets/js/ingredientes.js` | `db.from('ingredientes')` CRUD completo |
-| `assets/js/produtos.js` | `db.from('produtos').select(ficha_tecnica join)` |
-| `assets/js/compras.js` | Insert compra + update estoque via Supabase |
-| `assets/js/pdv.js` | `db.rpc('fechar_venda')` atomico |
-| `assets/js/financeiro.js` | Joins vendas + compras, agrupamento client-side |
-| `assets/js/usuarios.js` | `db.rpc('criar_usuario')` + `db.rpc('alterar_senha')` |
-| `assets/js/lista-compras.js` | `db.from('ingredientes')` + filtro status client-side |
-| `assets/js/historico-dia.js` | `db.from('vendas').gte/lte('data', hoje)` |
-
-### HTMLs atualizados
-
-Todos os 10 HTMLs com scripts substituiram:
-```html
-<!-- antes -->
-<script src="assets/js/api.js"></script>
-
-<!-- depois -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/supabase-client.js"></script>
-```
+| Funcao | Proposito |
+|--------|-----------|
+| `autenticar(p_email, p_senha)` | Login customizado com pgcrypto |
+| `criar_usuario(...)` | Cadastro de usuario via admin |
+| `alterar_senha(...)` | Troca de senha via admin |
+| `fechar_venda(p_itens, p_operador_id)` | Venda atomica com desconto de estoque |
+| `dashboard_metrics()` | Metricas consolidadas do mes |
 
 ---
 
 ## Fase 3 — Deploy
 
-| Servico | URL | Status |
-|---------|-----|--------|
-| Frontend (Netlify) | deploy automatico via GitHub | ✅ No ar |
-| Banco de dados (Supabase) | projeto WilsonLucas's Project | ✅ Ativo |
-
-**Credenciais de acesso ao sistema:**
-
-| E-mail | Senha | Perfil |
-|--------|-------|--------|
-| admin@admin.com | — | administrador |
-| financeiro@admin.com | — | financeiro |
-| estoque@admin.com | — | estoque |
-| operador@admin.com | — | operador |
+| Servico | Status |
+|---------|--------|
+| Frontend (Netlify) | ✅ No ar |
+| Banco de dados (Supabase) | ✅ Ativo |
 
 ---
 
-## Regras de Negocio Implementadas
+## Fase 4 — Dados Reais
 
-| Regra | Descricao | Onde |
-|-------|-----------|------|
-| RN-01 | Bloquear venda se estoque insuficiente (atomico via RPC) | `fechar_venda()` no Supabase |
-| RN-02 | Custo calculado com preco_compra atual do ingrediente | `fechar_venda()` no Supabase |
-| RN-03 | Produto precisa de ficha tecnica para ser vendido | Validado no `fechar_venda()` |
-| RN-05 | Gestao de usuarios restrita ao administrador | Menu filtrado por perfil em `app.js` |
-| RN-06 | 4 usuarios padrao nao podem ser desativados | Validado em `usuarios.js` por email |
-| RN-08 | Operador nao ve custo nem margem — apenas preco de venda | `pdv.js` nao exibe campos de custo |
+Script `seed_cardapio.sql` com dados reais da pastelaria:
+
+| Categoria | Qtd |
+|-----------|-----|
+| Ingredientes | 25 |
+| Pasteis + porcoes + bebidas | 35 |
+
+---
+
+## Fase 5 — Revisao de Seguranca (02/04/2026)
+
+### Vulnerabilidades identificadas e corrigidas
+
+| # | Severidade | Vulnerabilidade | Arquivo | Correcao |
+|---|-----------|-----------------|---------|----------|
+| V1 | **CRITICO** | Policies RLS `USING(true)` — acesso irrestrito | `001_schema_supabase.sql` | `003_security_hardening.sql`: policies restritivas por tabela |
+| V2 | **CRITICO** | Race condition: INSERT compra + UPDATE estoque em 2 chamadas separadas | `compras.js` | RPC atomica `registrar_compra()` |
+| V3 | **ALTO** | XSS: `usuario.nome` inserido direto em `innerHTML` sem escape | `app.js:104` | Funcao `escapeHtml()` aplicada em todos os pontos |
+| V4 | **ALTO** | XSS: dados de ingredientes/produtos/usuarios em `innerHTML` | varios JS | `App.escapeHtml()` aplicado em todos os templates |
+| V5 | **MEDIO** | Sessao localStorage sem expiracao | `auth.js` | TTL de 8h (`expira_em`) salvo na sessao |
+| V6 | **MEDIO** | Double-submit no PDV (botao sem loading state) | `pdv.js` | `App.setLoading()` no botao Finalizar |
+| V7 | **MEDIO** | Acoes destrutivas sem confirmacao | varios JS | `App.confirmar()` antes de excluir/inativar |
+| V8 | **BAIXO** | Label "PDV - TESTE" no menu de producao | `app.js` | Corrigido para "PDV" |
+| V9 | **BAIXO** | XSS em compras.js: nomes de ingredientes sem escape | `compras.js` | `App.escapeHtml()` aplicado |
+
+### Novos artefatos criados
+
+| Arquivo | Proposito |
+|---------|-----------|
+| `supabase/migrations/003_security_hardening.sql` | Remove policies permissivas; policies restritivas para vendas/itens_venda; RPC `registrar_compra()`; RPC `excluir_compra()` |
+
+### Arquivos JS corrigidos
+
+| Arquivo | Mudancas |
+|---------|----------|
+| `assets/js/app.js` | `escapeHtml()`, `confirmar()`, `setLoading()`, `isLoggedIn()` com TTL, label PDV corrigido, XSS na sidebar/topbar |
+| `assets/js/auth.js` | Sessao salva com `expira_em: Date.now() + 8h` |
+| `assets/js/compras.js` | Reescrito com `db.rpc('registrar_compra')` e `db.rpc('excluir_compra')` + confirmacao |
+| `assets/js/pdv.js` | `App.setLoading()` no finalizar, `App.confirmar()` antes de fechar venda, `App.escapeHtml()` nos templates |
+| `assets/js/ingredientes.js` | `App.confirmar()` antes de excluir, `App.escapeHtml()` nos templates |
+| `assets/js/produtos.js` | `App.confirmar()` antes de inativar, `App.escapeHtml()` em nome/categoria/ingredientes |
+| `assets/js/usuarios.js` | `App.confirmar()` antes de desativar, `App.escapeHtml()` em nome/email/perfil |
+
+### CSS adicionado
+
+| Arquivo | Mudanca |
+|---------|---------|
+| `assets/css/style.css` | Estilos para `.confirm-overlay` e `.confirm-dialog` |
 
 ---
 
@@ -137,37 +116,33 @@ Todos os 10 HTMLs com scripts substituiram:
 
 ---
 
-## Fase 4 — Dados Reais e Melhorias de UX (01/04/2026)
+## Regras de Negocio Implementadas
 
-### seed_cardapio.sql
-
-Script SQL com dados reais gerados a partir do cardápio da pastelaria:
-
-| Categoria | Qtd |
-|-----------|-----|
-| Ingredientes | 25 |
-| Pasteis salgados | 11 |
-| Pasteis doces | 6 |
-| Porcoes | 4 |
-| Mistos quentes | 3 |
-| Caldos de cana | 5 |
-| Sucos | 2 |
-| Cremes | 2 |
-| Aguas | 2 |
-| **Total produtos** | **35** |
-
-O script inclui limpeza dos dados de exemplo antes de inserir os dados reais. Regras aplicadas: 1 un de massa por pastel + 50g de cada recheio. Estoque minimo simbolico (0,1) para todos os ingredientes.
-
-### Melhorias de Interface
-
-| Arquivo alterado | Melhoria |
-|-----------------|----------|
-| `produtos.html` + `produtos.js` | Formulario convertido em modal. Tabela em largura total. Botao "+ Novo produto" e "Editar" abrem modal. |
-| `ingredientes.html` + `ingredientes.js` | Mesmo padrao de modal aplicado. |
-| `produtos.js` + `style.css` | Botao hamburguer (☰) expande ficha tecnica inline com ingredientes, custos e margem. |
-| `app.js` | Botao casinha (⌂) na topbar em todas as telas exceto a inicial do perfil. |
-| `style.css` | Correcao da variavel CSS `--color-primary` → `--primary` no cabecalho da ficha tecnica expandida. |
+| Regra | Descricao | Onde |
+|-------|-----------|------|
+| RN-01 | Bloquear venda se estoque insuficiente | `fechar_venda()` RPC |
+| RN-02 | Custo calculado com preco_compra atual | `fechar_venda()` RPC |
+| RN-03 | Produto precisa de ficha tecnica para ser vendido | `fechar_venda()` RPC |
+| RN-04 | Compra atomica: INSERT + UPDATE em transacao | `registrar_compra()` RPC (NOVO) |
+| RN-05 | Gestao de usuarios restrita ao administrador | Menu + RPC |
+| RN-06 | 4 usuarios padrao nao podem ser desativados | `usuarios.js` EMAILS_PROTEGIDOS |
+| RN-08 | Operador nao ve custo nem margem | `pdv.js` |
+| RN-09 | Sessao expira apos 8h | `auth.js` + `app.js` isLoggedIn() |
+| RN-10 | Acoes destrutivas requerem confirmacao | `App.confirmar()` em todos os modulos |
 
 ---
 
-## Status: SISTEMA NO AR, DADOS REAIS INSERIDOS, AGUARDANDO TESTES DA EQUIPE
+## Proximos Passos Recomendados
+
+| Prioridade | Item |
+|-----------|------|
+| Alta | Aplicar `003_security_hardening.sql` no Supabase (SQL Editor) |
+| Alta | Trocar senhas padrao (123456) dos usuarios de teste |
+| Media | Migrar para Supabase Auth nativo (permite RLS com `auth.uid()` granular) |
+| Media | Adicionar paginacao no modulo financeiro (historico cresce com o tempo) |
+| Baixa | Adicionar campo de busca/filtro no PDV para facilitar selecao de produtos |
+| Baixa | Exportar lista de compras em CSV para uso offline |
+
+---
+
+## Status: SISTEMA NO AR, CORRECOES DE SEGURANCA APLICADAS, AGUARDANDO DEPLOY DA MIGRATION 003

@@ -5,7 +5,7 @@ const MENU_POR_PERFIL = {
     ['produtos',      'Produtos',         'produtos.html'],
     ['compras',       'Compras',          'compras.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
-    ['pdv',           'PDV - TESTE',      'pdv.html'],
+    ['pdv',           'PDV',              'pdv.html'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
@@ -20,13 +20,25 @@ const MENU_POR_PERFIL = {
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
   ],
   operador: [
-    ['pdv',           'PDV - TESTE',      'pdv.html'],
+    ['pdv',           'PDV',              'pdv.html'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
 };
 
 const App = (() => {
   const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 horas
+
+  // ── Segurança: escape de HTML para prevenir XSS ───────────────────────────
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
+  }
 
   function getUsuario() {
     try {
@@ -42,7 +54,48 @@ const App = (() => {
   }
 
   function isLoggedIn() {
-    return Boolean(getUsuario());
+    const usuario = getUsuario();
+    if (!usuario) return false;
+    // Verificar TTL da sessao (8 horas)
+    if (usuario.expira_em && Date.now() > usuario.expira_em) {
+      localStorage.removeItem('sgc_user');
+      return false;
+    }
+    return true;
+  }
+
+  // ── Modal de confirmacao para acoes destrutivas ────────────────────────────
+  function confirmar(mensagem) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `
+        <div class="confirm-dialog">
+          <p>${escapeHtml(mensagem)}</p>
+          <div class="confirm-actions">
+            <button class="btn btn-secondary" id="confirm-cancelar">Cancelar</button>
+            <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      const fechar = (resultado) => { overlay.remove(); resolve(resultado); };
+      overlay.querySelector('#confirm-ok').addEventListener('click', () => fechar(true));
+      overlay.querySelector('#confirm-cancelar').addEventListener('click', () => fechar(false));
+    });
+  }
+
+  // ── Loading state em botoes de submit ─────────────────────────────────────
+  function setLoading(btn, loading) {
+    if (!btn) return;
+    if (loading) {
+      btn.dataset.originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Aguarde...';
+    } else {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.originalText || btn.textContent;
+    }
   }
 
   const today = () => new Date().toISOString().split('T')[0];
@@ -90,12 +143,12 @@ const App = (() => {
     if (sidebar) {
       sidebar.innerHTML = `
         <div class="sidebar-brand">
-          <span class="eyebrow">${perfil}</span>
+          <span class="eyebrow">${escapeHtml(perfil)}</span>
           <h2>Gestao Comercial</h2>
           <p>Compras, vendas e estoque</p>
         </div>
         <nav class="sidebar-nav">
-          ${menu.map(([key, label, href]) => `<a class="nav-link ${page === key ? 'active' : ''}" href="${href}"><span>${label}</span></a>`).join('')}
+          ${menu.map(([key, label, href]) => `<a class="nav-link ${page === key ? 'active' : ''}" href="${escapeHtml(href)}"><span>${escapeHtml(label)}</span></a>`).join('')}
         </nav>
       `;
     }
@@ -109,12 +162,12 @@ const App = (() => {
           <strong>${new Date().toLocaleDateString('pt-BR', { dateStyle: 'full' })}</strong>
         </div>
         <div class="topbar-user">
-          ${!isHome ? `<a class="btn btn-secondary" href="${homePage}" title="Voltar para o inicio">&#8962;</a>` : ''}
+          ${!isHome ? `<a class="btn btn-secondary" href="${escapeHtml(homePage)}" title="Voltar para o inicio">&#8962;</a>` : ''}
           <div>
-            <strong>${usuario.nome || 'Usuario'}</strong><br>
-            <small>${perfil}</small>
+            <strong>${escapeHtml(usuario.nome || 'Usuario')}</strong><br>
+            <small>${escapeHtml(perfil)}</small>
           </div>
-          <div class="avatar">${initials}</div>
+          <div class="avatar">${escapeHtml(initials)}</div>
           <button class="btn btn-secondary" id="logout-button" type="button">Sair</button>
         </div>
       `;
@@ -133,7 +186,10 @@ const App = (() => {
     getUsuario,
     isLoggedIn,
     logout,
-    renderAppShell
+    renderAppShell,
+    escapeHtml,
+    confirmar,
+    setLoading,
   };
 })();
 

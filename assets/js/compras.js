@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const quantityInput = document.getElementById('quantidade-compra');
   const priceInput = document.getElementById('valor-compra');
   const ingredienteSelect = document.getElementById('ingrediente-id');
+  const btnSalvar = form?.querySelector('button[type="submit"]');
   let ingredientesCache = [];
 
   const updateTotal = () => {
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ingredientesCache = data || [];
     if (ingredienteSelect) {
       ingredienteSelect.innerHTML = '<option value="">Selecione o ingrediente</option>' +
-        ingredientesCache.map((i) => `<option value="${i.id}">${i.nome} (${i.unidade})</option>`).join('');
+        ingredientesCache.map((i) => `<option value="${i.id}">${App.escapeHtml(i.nome)} (${App.escapeHtml(i.unidade)})</option>`).join('');
     }
   }
 
@@ -41,8 +42,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     tbody.innerHTML = (lista || []).length ? (lista || []).map((item) => `
       <tr>
         <td>${App.formatDate(item.data)}</td>
-        <td>${item.ingredientes?.nome || '-'}</td>
-        <td>${item.ingredientes?.unidade || '-'}</td>
+        <td>${App.escapeHtml(item.ingredientes?.nome || '-')}</td>
+        <td>${App.escapeHtml(item.ingredientes?.unidade || '-')}</td>
         <td>${Number(item.quantidade).toFixed(3)}</td>
         <td>${App.formatCurrency(item.valor_unitario)}</td>
         <td>${App.formatCurrency(item.total)}</td>
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateTotal();
   }
 
+  // Registro de compra — usa RPC atomica (substitui 2 chamadas separadas)
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const ingrediente_id = ingredienteSelect?.value;
@@ -71,47 +73,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = App.getUsuario();
 
     if (!ingrediente_id) { App.showToast('Selecione um ingrediente.', 'error'); return; }
+    if (!quantidade || quantidade <= 0) { App.showToast('Quantidade deve ser maior que zero.', 'error'); return; }
+    if (!valor_unitario || valor_unitario <= 0) { App.showToast('Valor unitario deve ser maior que zero.', 'error'); return; }
 
+    App.setLoading(btnSalvar, true);
     try {
-      const { error: errCompra } = await db.from('compras').insert({
-        ingrediente_id, quantidade, valor_unitario, data, criado_por: user?.id
+      // RPC atomica: INSERT compra + UPDATE estoque em uma transacao
+      const { data: result, error } = await db.rpc('registrar_compra', {
+        p_ingrediente_id: ingrediente_id,
+        p_quantidade: quantidade,
+        p_valor_unitario: valor_unitario,
+        p_data: data,
+        p_criado_por: user?.id || null
       });
-      if (errCompra) throw errCompra;
 
-      const { data: ing } = await db.from('ingredientes').select('estoque_atual').eq('id', ingrediente_id).single();
-      const { error: errIng } = await db.from('ingredientes').update({
-        estoque_atual: Number(ing.estoque_atual) + quantidade,
-        preco_compra: valor_unitario,
-        atualizado_em: new Date().toISOString()
-      }).eq('id', ingrediente_id);
-      if (errIng) throw errIng;
+      if (error || result?.erro) throw new Error(result?.erro || error?.message || 'Erro ao registrar compra.');
 
       App.showToast('Compra cadastrada com sucesso.');
       resetForm();
       renderTable();
     } catch (err) {
       App.showToast(err?.message || 'Erro ao cadastrar compra.', 'error');
+    } finally {
+      App.setLoading(btnSalvar, false);
     }
   });
 
+  // Exclusao de compra — usa RPC atomica (substitui 2 chamadas separadas)
   document.getElementById('compras-body')?.addEventListener('click', async (event) => {
     const deleteId = event.target.dataset.delete;
     if (!deleteId) return;
 
-    const { data: compra } = await db.from('compras').select('ingrediente_id, quantidade').eq('id', deleteId).single();
-    const { error } = await db.from('compras').delete().eq('id', deleteId);
-    if (error) { App.showToast('Erro ao excluir compra.', 'error'); return; }
+    const confirmado = await App.confirmar('Excluir esta compra? O estoque do ingrediente sera revertido.');
+    if (!confirmado) return;
 
-    if (compra) {
-      const { data: ing } = await db.from('ingredientes').select('estoque_atual').eq('id', compra.ingrediente_id).single();
-      await db.from('ingredientes').update({
-        estoque_atual: Math.max(0, Number(ing.estoque_atual) - Number(compra.quantidade)),
-        atualizado_em: new Date().toISOString()
-      }).eq('id', compra.ingrediente_id);
+    App.setLoading(event.target, true);
+    try {
+      const { data: result, error } = await db.rpc('excluir_compra', { p_compra_id: deleteId });
+      if (error || result?.erro) throw new Error(result?.erro || error?.message || 'Erro ao excluir compra.');
+
+      App.showToast('Compra excluida com sucesso.', 'warning');
+      renderTable();
+    } catch (err) {
+      App.showToast(err?.message || 'Erro ao excluir compra.', 'error');
+      App.setLoading(event.target, false);
     }
-
-    App.showToast('Compra excluida com sucesso.', 'warning');
-    renderTable();
   });
 
   await carregarIngredientes();

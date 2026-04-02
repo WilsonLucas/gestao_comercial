@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const select = document.getElementById('pdv-produto');
     if (select) {
       select.innerHTML = '<option value="">Selecione um produto</option>' +
-        produtosCache.map((p) => `<option value="${p.id}">${p.nome} - ${App.formatCurrency(p.preco_venda)}</option>`).join('');
+        produtosCache.map((p) => `<option value="${p.id}">${App.escapeHtml(p.nome)} - ${App.formatCurrency(p.preco_venda)}</option>`).join('');
     }
   }
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     tbody.innerHTML = carrinho.map((item, idx) => `
       <tr>
-        <td>${item.nome}</td>
+        <td>${App.escapeHtml(item.nome)}</td>
         <td>${item.quantidade}</td>
         <td>${App.formatCurrency(item.preco_venda)}</td>
         <td>
@@ -76,28 +76,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCarrinho();
   });
 
-  document.getElementById('pdv-finalizar')?.addEventListener('click', async () => {
+  const btnFinalizar = document.getElementById('pdv-finalizar');
+
+  btnFinalizar?.addEventListener('click', async () => {
     if (carrinho.length === 0) {
       App.showToast('Adicione itens ao carrinho antes de finalizar.', 'error');
       return;
     }
 
+    const confirmado = await App.confirmar(`Confirmar venda com ${carrinho.length} item(s)?`);
+    if (!confirmado) return;
+
     const user = App.getUsuario();
     const itens = carrinho.map((item) => ({ produto_id: item.produto_id, quantidade: item.quantidade }));
 
-    const { data, error } = await db.rpc('fechar_venda', {
-      p_itens: JSON.stringify(itens),
-      p_operador_id: user?.id
-    });
+    App.setLoading(btnFinalizar, true);
+    try {
+      const { data, error } = await db.rpc('fechar_venda', {
+        p_itens: JSON.stringify(itens),
+        p_operador_id: user?.id
+      });
 
-    if (error || data?.erro) {
-      App.showToast(data?.erro || 'Erro ao finalizar venda.', 'error');
-      return;
+      if (error || data?.erro) throw new Error(data?.erro || error?.message || 'Erro ao finalizar venda.');
+
+      App.showToast(`Venda finalizada! Total: ${App.formatCurrency(data.total)}`);
+      carrinho = [];
+      renderCarrinho();
+    } catch (err) {
+      App.showToast(err?.message || 'Erro ao finalizar venda.', 'error');
+    } finally {
+      App.setLoading(btnFinalizar, false);
     }
-
-    App.showToast(`Venda finalizada! Total: ${App.formatCurrency(data.total)}`);
-    carrinho = [];
-    renderCarrinho();
   });
 
   await carregarProdutos();

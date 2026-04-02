@@ -1,7 +1,8 @@
 # BRAINSTORM — Sistema de Gestão Comercial (Pastelaria Piloto)
 
 **Data:** 2026-03-29
-**Status:** Concluído
+**Revisado:** 2026-04-02
+**Status:** Re-analisado com expertise de segurança e boas práticas 2026
 **Participantes:** 2 devs (1 engenheiro de dados + 1 dev JS) + 2 stakeholders de negócio
 
 ---
@@ -9,16 +10,24 @@
 ## Contexto
 
 Sistema web de gestão comercial com piloto em uma pastelaria. O protótipo existente
-(`https://romullo-dev.github.io/prototipo_financias/`) foi construído em HTML + CSS + Vanilla JS
-com dados salvos em localStorage — serve como referência visual, mas precisa de backend
-real para produção.
+foi construído em HTML + CSS + Vanilla JS com dados salvos em localStorage — serve
+como referência visual. O sistema foi implementado com Supabase como backend
+(PostgreSQL + RPC functions) e está no ar no Netlify.
 
-**Problema central do protótipo atual:**
-- Dados não persistem entre dispositivos/usuários (localStorage)
-- Controle de acesso por perfil não implementado (todos veem tudo)
-- Sem conceito de ficha técnica / custo real de produção
-- 3 perfis no código vs. 4 perfis no novo design
-- Sem lista de compras automática
+**Problema central do protótipo original (resolvido):**
+- ✅ Dados não persistem entre dispositivos/usuários (localStorage)
+- ✅ Controle de acesso por perfil não implementado
+- ✅ Sem conceito de ficha técnica / custo real de produção
+- ✅ Sem lista de compras automática
+
+**Problemas críticos identificados na revisão pós-build:**
+- ❌ Zero Row-Level Security (RLS) no Supabase
+- ❌ Controle de acesso 100% client-side (bypassável via console)
+- ❌ XSS em app.js (interpolação direta de dados do usuário em innerHTML)
+- ❌ Race condition em compras.js (2 operações separadas, não atômicas)
+- ❌ Chave anon Supabase hardcoded no JS
+- ❌ Sessão localStorage sem expiração
+- ❌ Label "PDV - TESTE" no menu de produção
 
 ---
 
@@ -38,126 +47,153 @@ real para produção.
 ### Fluxo de valor
 
 ```
-[Compra ingrediente] → estoque de ingredientes atualizado
+[Compra ingrediente] → estoque de ingredientes atualizado (via RPC atômica)
 [Cadastro de produto] → produto + ficha técnica (ingredientes + quantidades)
 [Operador monta carrinho] → seleciona produtos e quantidades
-[Fecha venda] → sistema desconta ingredientes do estoque + calcula lucro real
+[Fecha venda] → sistema desconta ingredientes do estoque + calcula lucro real (via RPC atômica)
 [Estoque mínimo atingido] → produto vai para lista de compras automática
 ```
 
 ### Entidades principais
 
 ```
+usuarios
+  id, nome, email, senha_hash, perfil, ativo, criado_em
+
 ingredientes
-  id, nome, unidade_medida (kg/un/litro/etc), preco_compra, estoque_atual, estoque_minimo
+  id, nome, unidade_medida, preco_compra, estoque_atual, estoque_minimo, criado_em, atualizado_em
 
 produtos
-  id, nome, preco_venda
+  id, nome, preco_venda, categoria, ativo, criado_em
 
 ficha_tecnica (receita do produto)
   produto_id, ingrediente_id, quantidade
 
 compras (entrada de estoque)
-  id, ingrediente_id, quantidade, valor_unitario, total, data
+  id, ingrediente_id, quantidade, valor_unitario, total (gerado), data, criado_por, criado_em
 
 vendas
-  id, data, total, lucro
+  id, data, total, custo_total, lucro (gerado), operador_id, criado_em
 
 itens_venda
-  venda_id, produto_id, quantidade, preco_unitario, lucro
-
-usuarios
-  id, nome, email, senha_hash, perfil
-```
-
-### Cálculo de lucro por venda
-
-```
-custo_produto = Σ (preco_compra_ingrediente × quantidade_na_receita)
-lucro_item = (preco_venda - custo_produto) × quantidade_vendida
+  venda_id, produto_id, quantidade, preco_unitario, custo_unitario, total (gerado), lucro (gerado)
 ```
 
 ---
 
-## Funcionalidades por Perfil (MVP)
+## Vulnerabilidades e Riscos de Segurança
 
-### Administrador
-- Acesso a todos os módulos abaixo
-- Dashboard com indicadores: lucro total, lucro mensal, estoque baixo, total vendido
-- Relatório por produto: lucro, prejuízo, % de margem
-- Cadastro e gerenciamento de usuários (todos os perfis)
+### Críticos (devem ser corrigidos antes de qualquer uso real)
 
-### Financeiro
-- Visualização de compras realizadas
-- Visualização de vendas realizadas
-- Análise de desempenho por produto (lucro/prejuízo)
-- Resumo financeiro mensal (gastos × vendido × lucro)
+| # | Vulnerabilidade | Impacto | Correção |
+|---|---|---|---|
+| V1 | **Zero RLS no Supabase** | Qualquer pessoa com a anon key acessa todas as tabelas sem restrição | Implementar RLS policies por perfil em todas as tabelas |
+| V2 | **Controle de acesso client-side** | Operador pode chamar `db.from('vendas').select('*')` no console e ver dados financeiros | RLS enforcement no banco, não só no menu |
+| V3 | **XSS em app.js** | `usuario.nome` interpolado direto em innerHTML — usuário malicioso com nome `<script>...` pode executar JS | Função `escapeHtml()` em todo innerHTML com dados do usuário |
+| V4 | **Race condition em compras.js** | INSERT compra + UPDATE estoque são 2 chamadas separadas: se a segunda falhar, estoque fica desatualizado | Migrar para RPC `registrar_compra()` atômica (como `fechar_venda()`) |
 
-### Estoque
-- Cadastro de ingredientes (nome, unidade, preço, estoque mínimo)
-- Registro de compras (entrada de ingredientes → atualiza estoque)
-- Visualização de inventário com alertas (Normal / Atenção / Acabando)
-- Lista de compras automática (ingredientes abaixo do mínimo)
-- Cadastro de produtos finais com ficha técnica (receita)
+### Altos
 
-### Operador (PDV)
-- Tela de PDV: selecionar produtos e montar carrinho/comanda
-- Ver quantidade disponível (baseado no estoque de ingredientes)
-- Fechar venda → sistema desconta ingredientes + registra lucro
-- Histórico das vendas do dia
+| # | Vulnerabilidade | Impacto | Correção |
+|---|---|---|---|
+| V5 | **Sessão sem expiração** | Token/sessão nunca expira, mesmo com inatividade longa | Salvar `expirado_em` junto ao usuário; verificar a cada request |
+| V6 | **Proteção de admin hardcoded no frontend** | Lista de e-mails protegidos em `usuarios.js` — bypassável via console | Validar no RLS/RPC, não no JS |
+| V7 | **Senhas padrão 123456 documentadas** | Credenciais de acesso publicadas no repo/docs | Remover dos docs; forçar troca no primeiro login |
+
+### Médios
+
+| # | Vulnerabilidade | Impacto | Correção |
+|---|---|---|---|
+| V8 | **Chave anon exposta no código** | A anon key é pública por design do Supabase, mas sem RLS isso equivale a acesso total | RLS torna a exposição da anon key aceitável |
+| V9 | **Double-click em botões** | Usuário pode cadastrar compra/venda em duplicidade | Desabilitar botão durante request (loading state) |
+| V10 | **Sem confirmação em ações destrutivas** | Deleção de ingrediente/inativação de produto/usuário acontece sem confirmação | Modal de confirmação antes de ações irreversíveis |
+| V11 | **Sem validação server-side de inputs** | Supabase RPC aceita valores negativos, strings muito longas etc. | Adicionar CHECK constraints e validação nas RPC functions |
 
 ---
 
-## Abordagem Técnica Escolhida
+## Melhorias Identificadas na Revisão
 
-### Stack: Evolução do protótipo
+### Segurança (obrigatórias)
+1. **RLS policies** — controle de acesso real no banco
+2. **RPC `registrar_compra()`** — operação atômica como `fechar_venda()`
+3. **Escape de HTML** — proteção XSS em todos os pontos de interpolação
+4. **Expiração de sessão** — TTL de 8h na sessão localStorage
+5. **Confirmação antes de ações destrutivas**
+6. **Loading states** — prevenção de double-submit
 
-| Camada | Tecnologia | Justificativa |
+### UX / Operacional
+7. **Label "PDV - TESTE"** → "PDV" no menu de produção
+8. **Feedback visual durante carregamento** — skeleton ou spinner
+9. **Validação de formulários mais clara** — mensagens de erro por campo
+10. **Paginação no financeiro** — evitar carregar todo histórico
+
+### Técnicas
+11. **RLS `administrador` pode fazer tudo** — granularidade adequada por perfil
+12. **RLS `operador`** só pode inserir vendas, não ver histórico financeiro
+13. **RLS `financeiro`** vê compras e vendas mas não consegue inserir/deletar
+
+---
+
+## Abordagem Técnica Definida
+
+### Stack: Mantida (sem alterações)
+
+| Camada | Tecnologia | Status |
 |---|---|---|
-| Frontend | HTML + CSS + Vanilla JS | Mantém o trabalho existente, ambos os devs dominam |
-| Backend | Node.js + Express | Mesmo ecossistema JS, curva mínima |
-| Banco de dados | PostgreSQL | Relacional, ideal para o modelo produto-ingrediente-receita |
-| Autenticação | JWT (JSON Web Tokens) | Substitui o sessionStorage inseguro do protótipo |
-| Deploy | Railway ou Render | Simples, gratuito para MVP |
+| Frontend | HTML + CSS + Vanilla JS | Mantida — ambos os devs dominam |
+| Backend | Supabase (PostgreSQL + RPC) | Mantida — substitui o Node.js original |
+| Auth | RPC customizada `autenticar()` + localStorage | Mantida — migrações incrementais preferidas |
+| Deploy | Netlify (frontend) + Supabase (DB) | No ar |
 
-### Alternativa considerada (não escolhida)
+### Por que não migrar para Supabase Auth?
 
-**FastAPI (Python)** — faria sentido dado que um dos devs é engenheiro de dados, mas
-o segundo dev é desconhecido e domina JS. Manter tudo em JS reduz o risco de fragmentação
-do time. Pode ser avaliado em versão futura se o time crescer.
+A migração para `supabase.auth.signIn()` (Supabase Auth nativo) seria a correção ideal
+para auth, mas requereria:
+- Migrar tabela `usuarios` para `auth.users`
+- Reescrever toda a lógica de auth no frontend
+- Risco de regressão em um sistema já em produção
+
+**Decisão:** Manter auth customizada + corrigir via RLS e expiração de sessão.
+Supabase Auth pode ser avaliado na próxima versão maior.
 
 ---
 
-## YAGNI — Fora do MVP
+## YAGNI — Fora do MVP (inalterado)
 
 | Feature | Motivo |
 |---|---|
-| Gráficos avançados (Chart.js, D3) | Tabelas respondem a pergunta "tá lucrando?" — gráficos são extra |
+| Gráficos avançados (Chart.js já integrado, YAGNI para dashboards complexos) | Tabelas respondem a pergunta "tá lucrando?" |
 | Export PDF/Excel | Não bloqueia operação |
 | Gestão de fornecedores | Não foi pedido |
 | Múltiplas unidades/filiais | Piloto é uma loja só |
 | App mobile nativo | Web responsiva resolve no MVP |
 | Histórico de preços de ingredientes | Complexidade não justificada no piloto |
 | Cupons/descontos no PDV | Fora do escopo definido |
+| Supabase Auth nativo | Regressão em sistema em produção — pós-MVP |
 
 ---
 
-## Riscos Identificados
+## Riscos Identificados (Revisados)
 
-| Risco | Impacto | Mitigação |
-|---|---|---|
-| Stakeholders não-técnicos têm expectativas de produto finalizado | Alto | Apresentar protótipo funcional em fases, cada fase com entrega demonstrável |
-| Segundo dev tem skill desconhecida | Médio | Manter stack em JS, dividir frontend (HTML/CSS/JS) do backend (Node/Express) |
-| Ficha técnica é complexa de manter | Médio | Interface clara de cadastro, validação de campos obrigatórios |
-| Dados do localStorage do protótipo incompatíveis | Baixo | Migração não necessária — sistema novo começa do zero com seed data |
+| Risco | Impacto | Status | Mitigação |
+|---|---|---|---|
+| Dados financeiros expostos sem RLS | **Crítico** | ❌ Aberto | Implementar RLS imediatamente |
+| XSS via nome de usuário | **Alto** | ❌ Aberto | Adicionar escapeHtml() |
+| Race condition em compras | **Alto** | ❌ Aberto | Criar RPC `registrar_compra()` |
+| Sessão sem expiração | **Médio** | ❌ Aberto | Adicionar TTL ao localStorage |
+| Double-submit em PDV | **Médio** | ❌ Aberto | Loading state no botão finalizar |
+| Senha padrão 123456 documentada | **Médio** | ❌ Aberto | Remover de documentação pública |
+| Stakeholders com expectativas de produto finalizado | Médio | ✅ Mitigado | Sistema no ar com dados reais |
+| Segundo dev com skill desconhecida | Médio | ✅ Mitigado | Stack em JS, estrutura clara |
+| Ficha técnica complexa de manter | Médio | ✅ Mitigado | Modal com interface clara implementado |
 
 ---
 
 ## Referência Visual
 
-O protótipo existente serve como base para o design da UI:
-- Layout sidebar + conteúdo principal: manter
-- Paleta de cores e componentes: manter e evoluir
-- Páginas existentes (dashboard, compras, vendas, estoque, financeiro, usuarios): refatorar para consumir a API real
-
-
+O sistema está implementado e no ar. Design de UI mantido com:
+- Layout sidebar + conteúdo principal
+- Modais para cadastro/edição
+- Tabelas com filtros (produtos, ingredientes)
+- Ficha técnica expansível inline (botão hamburger)
+- Botão casinha na topbar para navegação

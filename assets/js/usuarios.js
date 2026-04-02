@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usuario = App.getUsuario();
     tbody.innerHTML = (lista || []).map((u) => `
       <tr>
-        <td>${u.nome}</td>
-        <td>${u.email}</td>
-        <td><span class="badge normal">${u.perfil}</span></td>
+        <td>${App.escapeHtml(u.nome)}</td>
+        <td>${App.escapeHtml(u.email)}</td>
+        <td><span class="badge normal">${App.escapeHtml(u.perfil)}</span></td>
         <td><span class="badge ${u.ativo ? 'normal' : 'danger'}">${u.ativo ? 'Ativo' : 'Inativo'}</span></td>
         <td>
           <div class="actions">
@@ -87,8 +87,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (deleteId) {
+      const confirmado = await App.confirmar('Desativar este usuario? Ele perdera acesso ao sistema.');
+      if (!confirmado) return;
+      App.setLoading(event.target, true);
       const { error } = await db.from('usuarios').update({ ativo: false }).eq('id', deleteId);
-      if (error) { App.showToast('Erro ao desativar usuario.', 'error'); return; }
+      if (error) {
+        App.showToast('Erro ao desativar usuario.', 'error');
+        App.setLoading(event.target, false);
+        return;
+      }
       App.showToast('Usuario desativado com sucesso.', 'warning');
       renderTable();
     }
