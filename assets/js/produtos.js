@@ -47,20 +47,67 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    tbody.innerHTML = (lista || []).length ? (lista || []).map((item) => `
-      <tr>
-        <td>${item.nome}</td>
-        <td>${App.formatCurrency(item.preco_venda)}</td>
-        <td>${(item.ficha_tecnica || []).length} ingrediente(s)</td>
-        <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
-        <td>
-          <div class="actions">
-            <button class="btn btn-secondary" data-edit="${item.id}">Editar</button>
-            <button class="btn btn-danger" data-delete="${item.id}">Inativar</button>
-          </div>
-        </td>
-      </tr>
-    `).join('') : '<tr><td colspan="5" class="empty-state">Nenhum produto cadastrado.</td></tr>';
+    tbody.innerHTML = (lista || []).length ? (lista || []).map((item) => {
+      const ficha = item.ficha_tecnica || [];
+      const custo = ficha.reduce((acc, f) => acc + (Number(f.ingredientes?.preco_compra || 0) * Number(f.quantidade)), 0);
+      const margem = item.preco_venda > 0 ? ((item.preco_venda - custo) / item.preco_venda * 100).toFixed(1) : 0;
+
+      const fichaRows = ficha.map((f) => {
+        const custoItem = Number(f.ingredientes?.preco_compra || 0) * Number(f.quantidade);
+        return `
+          <tr class="ficha-detalhe-row">
+            <td>${f.ingredientes?.nome || '-'}</td>
+            <td>${f.ingredientes?.unidade || '-'}</td>
+            <td>${Number(f.quantidade).toFixed(3)}</td>
+            <td>${App.formatCurrency(f.ingredientes?.preco_compra || 0)}</td>
+            <td>${App.formatCurrency(custoItem)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <tr>
+          <td>${item.nome}</td>
+          <td>${App.formatCurrency(item.preco_venda)}</td>
+          <td>${ficha.length} ingrediente(s)</td>
+          <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-secondary" data-edit="${item.id}">Editar</button>
+              <button class="btn btn-danger" data-delete="${item.id}">Inativar</button>
+              <button class="btn btn-secondary btn-icon" data-toggle-ficha="${item.id}" title="Ver ficha tecnica">&#9776;</button>
+            </div>
+          </td>
+        </tr>
+        <tr class="ficha-detalhe-panel" id="ficha-${item.id}" style="display:none;">
+          <td colspan="5">
+            <div class="ficha-detalhe-container">
+              <table class="ficha-detalhe-table">
+                <thead>
+                  <tr>
+                    <th>Ingrediente</th>
+                    <th>Unidade</th>
+                    <th>Quantidade</th>
+                    <th>Custo unit.</th>
+                    <th>Custo total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${fichaRows || '<tr><td colspan="5" class="empty-state">Sem ingredientes cadastrados.</td></tr>'}
+                </tbody>
+                <tfoot>
+                  <tr class="ficha-detalhe-footer">
+                    <td colspan="3"><strong>Custo total do produto</strong></td>
+                    <td><strong>${App.formatCurrency(custo)}</strong></td>
+                    <td><strong class="metric-positive">Margem: ${margem}%</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="5" class="empty-state">Nenhum produto cadastrado.</td></tr>';
   }
 
   function resetForm() {
@@ -120,6 +167,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('produtos-body')?.addEventListener('click', async (event) => {
+    const toggleId = event.target.dataset.toggleFicha;
+    if (toggleId) {
+      const panel = document.getElementById(`ficha-${toggleId}`);
+      if (panel) {
+        const visible = panel.style.display !== 'none';
+        panel.style.display = visible ? 'none' : 'table-row';
+        event.target.style.background = visible ? '' : 'var(--color-primary)';
+        event.target.style.color = visible ? '' : '#fff';
+      }
+      return;
+    }
+
     const editId = event.target.dataset.edit;
     const deleteId = event.target.dataset.delete;
 

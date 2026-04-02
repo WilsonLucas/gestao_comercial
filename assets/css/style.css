@@ -180,3 +180,13 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
   .sidebar-nav { grid-template-columns: repeat(3, 1fr); }
   .content-area { padding-bottom: 108px; }
 }
+
+/* Ficha Tecnica expandivel na tabela de produtos */
+.btn-icon { padding: 6px 10px; font-size: 16px; line-height: 1; }
+.ficha-detalhe-panel td { padding: 0 !important; border-top: none !important; }
+.ficha-detalhe-container { background: var(--bg-secondary, #f8f9fa); border-top: 2px solid var(--color-primary); padding: 16px 20px; }
+.ficha-detalhe-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ficha-detalhe-table th { background: var(--color-primary); color: #fff; padding: 8px 12px; text-align: left; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+.ficha-detalhe-table tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+.ficha-detalhe-table tbody tr:last-child td { border-bottom: none; }
+.ficha-detalhe-footer td { padding: 10px 12px !important; background: #fff; border-top: 2px solid var(--border-color, #e5e7eb) !important; }
