@@ -110,11 +110,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).join('') : '<tr><td colspan="5" class="empty-state">Nenhum produto cadastrado.</td></tr>';
   }
 
+  const overlay = document.getElementById('produto-modal-overlay');
+  const modalTitulo = document.getElementById('modal-titulo');
+
+  function abrirModal(titulo = 'Novo produto') {
+    modalTitulo.textContent = titulo;
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharModal() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
   function resetForm() {
     form.reset();
     idInput.value = '';
     renderFichaTecnica([]);
+    fecharModal();
   }
+
+  document.getElementById('btn-novo-produto')?.addEventListener('click', () => {
+    resetForm();
+    abrirModal('Novo produto');
+  });
+
+  document.getElementById('fechar-modal')?.addEventListener('click', fecharModal);
+  overlay?.addEventListener('click', (e) => { if (e.target === overlay) fecharModal(); });
 
   document.getElementById('adicionar-ingrediente')?.addEventListener('click', () => {
     const ficha = getFichaTecnica();
@@ -159,7 +182,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       App.showToast(id ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.');
-      resetForm();
+      fecharModal();
+      form.reset();
+      idInput.value = '';
+      renderFichaTecnica([]);
       renderTable();
     } catch (err) {
       App.showToast(err?.message || 'Erro ao salvar produto.', 'error');
@@ -193,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('produto-nome').value = item.nome;
       document.getElementById('produto-preco').value = item.preco_venda;
       renderFichaTecnica(item.ficha_tecnica || []);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      abrirModal('Editar produto');
     }
 
     if (deleteId) {
@@ -204,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  document.getElementById('cancelar-edicao-produto')?.addEventListener('click', resetForm);
+  document.getElementById('cancelar-edicao-produto')?.addEventListener('click', () => { form.reset(); idInput.value = ''; renderFichaTecnica([]); fecharModal(); });
 
   await carregarIngredientes();
   renderFichaTecnica([]);

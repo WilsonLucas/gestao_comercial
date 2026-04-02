@@ -190,3 +190,12 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 .ficha-detalhe-table tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
 .ficha-detalhe-table tbody tr:last-child td { border-bottom: none; }
 .ficha-detalhe-footer td { padding: 10px 12px !important; background: #fff; border-top: 2px solid var(--border-color, #e5e7eb) !important; }
+
+/* Modal de cadastro de produto */
+.modal-overlay { position: fixed; inset: 0; background: rgba(31,41,55,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.modal-box { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); width: min(640px, 100%); max-height: 90vh; overflow-y: auto; padding: 32px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-header h2 { margin: 0; font-size: 1.25rem; }
+.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); line-height: 1; padding: 4px 8px; border-radius: 8px; }
+.modal-close:hover { background: var(--bg); color: var(--text); }
+.page-heading { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }

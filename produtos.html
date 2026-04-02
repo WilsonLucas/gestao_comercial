@@ -18,58 +18,58 @@
             <h1>Produtos</h1>
             <p>Cadastre produtos com ficha tecnica de ingredientes e preco de venda.</p>
           </div>
+          <button class="btn btn-primary" id="btn-novo-produto">+ Novo produto</button>
         </section>
 
-        <section class="panel-grid two-columns align-start">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Novo produto</h2>
-                <p>Preencha os dados e monte a ficha tecnica.</p>
-              </div>
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Produtos cadastrados</h2>
+              <p>Edite ou inative produtos quando necessario.</p>
             </div>
-            <form id="produto-form" class="form-grid">
-              <input type="hidden" id="produto-id">
-              <label class="full-width"><span>Nome do produto</span><input type="text" id="produto-nome" required></label>
-              <label><span>Preco de venda</span><input type="number" id="produto-preco" step="0.01" min="0" required></label>
-              <div class="full-width">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <strong>Ficha tecnica</strong>
-                  <button type="button" class="btn btn-secondary" id="adicionar-ingrediente">+ Ingrediente</button>
-                </div>
-                <div id="ficha-tecnica-lista"></div>
-              </div>
-              <div class="form-actions full-width">
-                <button class="btn btn-primary" type="submit">Salvar produto</button>
-                <button class="btn btn-secondary" type="button" id="cancelar-edicao-produto">Cancelar edicao</button>
-              </div>
-            </form>
-          </article>
-
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Produtos cadastrados</h2>
-                <p>Edite ou inative produtos quando necessario.</p>
-              </div>
-            </div>
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Preco venda</th>
-                    <th>Ficha tecnica</th>
-                    <th>Status</th>
-                    <th>Acoes</th>
-                  </tr>
-                </thead>
-                <tbody id="produtos-body"></tbody>
-              </table>
-            </div>
-          </article>
-        </section>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Preco venda</th>
+                  <th>Ficha tecnica</th>
+                  <th>Status</th>
+                  <th>Acoes</th>
+                </tr>
+              </thead>
+              <tbody id="produtos-body"></tbody>
+            </table>
+          </div>
+        </article>
       </main>
+    </div>
+  </div>
+
+  <!-- Modal de cadastro/edicao -->
+  <div id="produto-modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-titulo">Novo produto</h2>
+        <button class="modal-close" id="fechar-modal">&times;</button>
+      </div>
+      <form id="produto-form" class="form-grid">
+        <input type="hidden" id="produto-id">
+        <label class="full-width"><span>Nome do produto</span><input type="text" id="produto-nome" required></label>
+        <label><span>Preco de venda</span><input type="number" id="produto-preco" step="0.01" min="0" required></label>
+        <div class="full-width">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong>Ficha tecnica</strong>
+            <button type="button" class="btn btn-secondary" id="adicionar-ingrediente">+ Ingrediente</button>
+          </div>
+          <div id="ficha-tecnica-lista"></div>
+        </div>
+        <div class="form-actions full-width">
+          <button class="btn btn-primary" type="submit">Salvar produto</button>
+          <button class="btn btn-secondary" type="button" id="cancelar-edicao-produto">Cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
 
