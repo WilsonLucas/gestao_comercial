@@ -4,13 +4,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const form = document.getElementById('produto-form');
   const idInput = document.getElementById('produto-id');
   let ingredientesCache = [];
+  let listaCache = [];
 
+  // ── Ingredientes ───────────────────────────────────────────────
   async function carregarIngredientes() {
     const { data } = await db.from('ingredientes').select('id, nome, unidade').order('nome');
     ingredientesCache = data || [];
-    return ingredientesCache;
   }
 
+  // ── Ficha Técnica (form) ────────────────────────────────────────
   function renderFichaTecnica(ficha = []) {
     const container = document.getElementById('ficha-tecnica-lista');
     if (!container) return;
@@ -34,20 +36,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }));
   }
 
-  async function renderTable() {
+  // ── Renderização das linhas ────────────────────────────────────
+  function renderRows(lista) {
     const tbody = document.getElementById('produtos-body');
-    const { data: lista, error } = await db
-      .from('produtos')
-      .select('id, nome, preco_venda, ativo, ficha_tecnica(id, quantidade, ingredientes(id, nome, unidade, preco_compra))')
-      .order('nome');
+    const colspan = 6;
 
-    if (error) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar produtos.</td></tr>';
-      App.showToast('Erro ao carregar produtos.', 'error');
+    if (!lista.length) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state">Nenhum produto encontrado.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = (lista || []).length ? (lista || []).map((item) => {
+    tbody.innerHTML = lista.map((item) => {
       const ficha = item.ficha_tecnica || [];
       const custo = ficha.reduce((acc, f) => acc + (Number(f.ingredientes?.preco_compra || 0) * Number(f.quantidade)), 0);
       const margem = item.preco_venda > 0 ? ((item.preco_venda - custo) / item.preco_venda * 100).toFixed(1) : 0;
@@ -68,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return `
         <tr>
           <td>${item.nome}</td>
+          <td><span class="badge categoria-badge">${item.categoria || '—'}</span></td>
           <td>${App.formatCurrency(item.preco_venda)}</td>
           <td>${ficha.length} ingrediente(s)</td>
           <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </td>
         </tr>
         <tr class="ficha-detalhe-panel" id="ficha-${item.id}" style="display:none;">
-          <td colspan="5">
+          <td colspan="${colspan}">
             <div class="ficha-detalhe-container">
               <table class="ficha-detalhe-table">
                 <thead>
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${fichaRows || '<tr><td colspan="5" class="empty-state">Sem ingredientes cadastrados.</td></tr>'}
+                  ${fichaRows || `<tr><td colspan="5" class="empty-state">Sem ingredientes cadastrados.</td></tr>`}
                 </tbody>
                 <tfoot>
                   <tr class="ficha-detalhe-footer">
@@ -107,9 +107,88 @@ document.addEventListener('DOMContentLoaded', async () => {
           </td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="5" class="empty-state">Nenhum produto cadastrado.</td></tr>';
+    }).join('');
   }
 
+  // ── Filtros ────────────────────────────────────────────────────
+  function getChecked(containerSelector) {
+    return [...document.querySelectorAll(`${containerSelector} input:checked`)].map((el) => el.value);
+  }
+
+  function atualizarContador(countId, valores) {
+    const el = document.getElementById(countId);
+    if (!el) return;
+    el.textContent = valores.length ? `(${valores.length})` : '';
+  }
+
+  function aplicarFiltros() {
+    const nome = document.getElementById('filtro-nome').value.toLowerCase().trim();
+    const ingrediente = document.getElementById('filtro-ingrediente').value.toLowerCase().trim();
+    const categorias = getChecked('#filtro-categoria-opts');
+    const statuses = getChecked('#filtro-status-opts');
+
+    atualizarContador('count-categoria', categorias);
+    atualizarContador('count-status', statuses);
+
+    let filtrado = listaCache;
+    if (nome) filtrado = filtrado.filter((i) => i.nome.toLowerCase().includes(nome));
+    if (categorias.length) filtrado = filtrado.filter((i) => categorias.includes(i.categoria || ''));
+    if (statuses.length) filtrado = filtrado.filter((i) => statuses.includes(i.ativo ? 'ativo' : 'inativo'));
+    if (ingrediente) filtrado = filtrado.filter((i) =>
+      (i.ficha_tecnica || []).some((f) => f.ingredientes?.nome.toLowerCase().includes(ingrediente))
+    );
+
+    renderRows(filtrado);
+  }
+
+  // Multi-select toggle
+  document.querySelectorAll('.multi-select-wrap').forEach((wrap) => {
+    const btn = wrap.querySelector('.filter-btn');
+    const opts = wrap.querySelector('.multi-select-opts');
+    btn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const aberto = opts.classList.contains('open');
+      document.querySelectorAll('.multi-select-opts.open').forEach((el) => el.classList.remove('open'));
+      if (!aberto) opts.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.multi-select-opts.open').forEach((el) => el.classList.remove('open'));
+  });
+
+  document.getElementById('filtro-nome')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtro-ingrediente')?.addEventListener('input', aplicarFiltros);
+  document.getElementById('filtro-categoria-opts')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('filtro-status-opts')?.addEventListener('change', aplicarFiltros);
+  document.getElementById('limpar-filtros')?.addEventListener('click', () => {
+    document.getElementById('filtro-nome').value = '';
+    document.getElementById('filtro-ingrediente').value = '';
+    document.querySelectorAll('#filtro-categoria-opts input, #filtro-status-opts input').forEach((el) => { el.checked = false; });
+    atualizarContador('count-categoria', []);
+    atualizarContador('count-status', []);
+    renderRows(listaCache);
+  });
+
+  // ── Carregar dados ─────────────────────────────────────────────
+  async function carregarProdutos() {
+    const tbody = document.getElementById('produtos-body');
+    const { data: lista, error } = await db
+      .from('produtos')
+      .select('id, nome, preco_venda, ativo, categoria, ficha_tecnica(id, quantidade, ingredientes(id, nome, unidade, preco_compra))')
+      .order('categoria')
+      .order('nome');
+
+    if (error) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro ao carregar produtos.</td></tr>';
+      App.showToast('Erro ao carregar produtos.', 'error');
+      return;
+    }
+
+    listaCache = lista || [];
+    aplicarFiltros();
+  }
+
+  // ── Modal ──────────────────────────────────────────────────────
   const overlay = document.getElementById('produto-modal-overlay');
   const modalTitulo = document.getElementById('modal-titulo');
 
@@ -122,21 +201,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   function fecharModal() {
     overlay.style.display = 'none';
     document.body.style.overflow = '';
-  }
-
-  function resetForm() {
     form.reset();
     idInput.value = '';
     renderFichaTecnica([]);
-    fecharModal();
   }
 
   document.getElementById('btn-novo-produto')?.addEventListener('click', () => {
-    resetForm();
+    fecharModal();
     abrirModal('Novo produto');
   });
-
   document.getElementById('fechar-modal')?.addEventListener('click', fecharModal);
+  document.getElementById('cancelar-edicao-produto')?.addEventListener('click', fecharModal);
   overlay?.addEventListener('click', (e) => { if (e.target === overlay) fecharModal(); });
 
   document.getElementById('adicionar-ingrediente')?.addEventListener('click', () => {
@@ -154,10 +229,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ── Salvar ─────────────────────────────────────────────────────
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const id = idInput.value;
     const nome = document.getElementById('produto-nome').value.trim();
+    const categoria = document.getElementById('produto-categoria').value;
     const preco_venda = Number(document.getElementById('produto-preco').value);
     const ficha = getFichaTecnica();
 
@@ -165,11 +242,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       let produtoId = id;
 
       if (id) {
-        const { error } = await db.from('produtos').update({ nome, preco_venda }).eq('id', id);
+        const { error } = await db.from('produtos').update({ nome, categoria, preco_venda }).eq('id', id);
         if (error) throw error;
         await db.from('ficha_tecnica').delete().eq('produto_id', id);
       } else {
-        const { data, error } = await db.from('produtos').insert({ nome, preco_venda }).select('id').single();
+        const { data, error } = await db.from('produtos').insert({ nome, categoria, preco_venda }).select('id').single();
         if (error) throw error;
         produtoId = data.id;
       }
@@ -183,15 +260,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       App.showToast(id ? 'Produto atualizado com sucesso.' : 'Produto cadastrado com sucesso.');
       fecharModal();
-      form.reset();
-      idInput.value = '';
-      renderFichaTecnica([]);
-      renderTable();
+      carregarProdutos();
     } catch (err) {
       App.showToast(err?.message || 'Erro ao salvar produto.', 'error');
     }
   });
 
+  // ── Ações da tabela ────────────────────────────────────────────
   document.getElementById('produtos-body')?.addEventListener('click', async (event) => {
     const toggleId = event.target.dataset.toggleFicha;
     if (toggleId) {
@@ -199,7 +274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (panel) {
         const visible = panel.style.display !== 'none';
         panel.style.display = visible ? 'none' : 'table-row';
-        event.target.style.background = visible ? '' : 'var(--color-primary)';
+        event.target.style.background = visible ? '' : 'var(--primary)';
         event.target.style.color = visible ? '' : '#fff';
       }
       return;
@@ -211,12 +286,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (editId) {
       const { data: item } = await db
         .from('produtos')
-        .select('id, nome, preco_venda, ficha_tecnica(quantidade, ingrediente_id)')
+        .select('id, nome, preco_venda, categoria, ficha_tecnica(quantidade, ingrediente_id)')
         .eq('id', editId)
         .single();
       if (!item) return;
       idInput.value = item.id;
       document.getElementById('produto-nome').value = item.nome;
+      document.getElementById('produto-categoria').value = item.categoria || '';
       document.getElementById('produto-preco').value = item.preco_venda;
       renderFichaTecnica(item.ficha_tecnica || []);
       abrirModal('Editar produto');
@@ -226,13 +302,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { error } = await db.from('produtos').update({ ativo: false }).eq('id', deleteId);
       if (error) { App.showToast('Erro ao inativar produto.', 'error'); return; }
       App.showToast('Produto inativado com sucesso.', 'warning');
-      renderTable();
+      carregarProdutos();
     }
   });
 
-  document.getElementById('cancelar-edicao-produto')?.addEventListener('click', () => { form.reset(); idInput.value = ''; renderFichaTecnica([]); fecharModal(); });
-
+  // ── Init ───────────────────────────────────────────────────────
   await carregarIngredientes();
   renderFichaTecnica([]);
-  renderTable();
+  carregarProdutos();
 });

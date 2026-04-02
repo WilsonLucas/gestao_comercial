@@ -28,11 +28,40 @@
               <p>Edite ou inative produtos quando necessario.</p>
             </div>
           </div>
+
+          <!-- Barra de filtros -->
+          <div class="filter-bar">
+            <input type="text" id="filtro-nome" class="filter-input" placeholder="Buscar por nome...">
+            <input type="text" id="filtro-ingrediente" class="filter-input" placeholder="Buscar por ingrediente...">
+
+            <div class="multi-select-wrap" id="wrap-categoria">
+              <button type="button" class="filter-btn" id="btn-categoria">Categoria <span class="filter-count" id="count-categoria"></span></button>
+              <div class="multi-select-opts" id="filtro-categoria-opts">
+                <label><input type="checkbox" value="Pastéis Salgados"> Pastéis Salgados</label>
+                <label><input type="checkbox" value="Pastéis Doces"> Pastéis Doces</label>
+                <label><input type="checkbox" value="Porções"> Porções</label>
+                <label><input type="checkbox" value="Misto Quente"> Misto Quente</label>
+                <label><input type="checkbox" value="Bebidas"> Bebidas</label>
+              </div>
+            </div>
+
+            <div class="multi-select-wrap" id="wrap-status">
+              <button type="button" class="filter-btn" id="btn-status">Status <span class="filter-count" id="count-status"></span></button>
+              <div class="multi-select-opts" id="filtro-status-opts">
+                <label><input type="checkbox" value="ativo"> Ativo</label>
+                <label><input type="checkbox" value="inativo"> Inativo</label>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary" id="limpar-filtros">Limpar</button>
+          </div>
+
           <div class="table-wrapper">
             <table>
               <thead>
                 <tr>
                   <th>Nome</th>
+                  <th>Categoria</th>
                   <th>Preco venda</th>
                   <th>Ficha tecnica</th>
                   <th>Status</th>
@@ -57,6 +86,16 @@
       <form id="produto-form" class="form-grid">
         <input type="hidden" id="produto-id">
         <label class="full-width"><span>Nome do produto</span><input type="text" id="produto-nome" required></label>
+        <label><span>Categoria</span>
+          <select id="produto-categoria" required>
+            <option value="">Selecione...</option>
+            <option value="Pastéis Salgados">Pastéis Salgados</option>
+            <option value="Pastéis Doces">Pastéis Doces</option>
+            <option value="Porções">Porções</option>
+            <option value="Misto Quente">Misto Quente</option>
+            <option value="Bebidas">Bebidas</option>
+          </select>
+        </label>
         <label><span>Preco de venda</span><input type="number" id="produto-preco" step="0.01" min="0" required></label>
         <div class="full-width">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">

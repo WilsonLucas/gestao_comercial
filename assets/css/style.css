@@ -199,3 +199,22 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); line-height: 1; padding: 4px 8px; border-radius: 8px; }
 .modal-close:hover { background: var(--bg); color: var(--text); }
 .page-heading { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
+
+/* Barra de filtros */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 16px; }
+.filter-input { height: 36px; padding: 0 12px; border: 1px solid var(--border-color, #e5e7eb); border-radius: var(--radius); font-size: 14px; background: var(--surface); color: var(--text); outline: none; min-width: 160px; }
+.filter-input:focus { border-color: var(--primary); }
+
+/* Multi-select dropdown */
+.multi-select-wrap { position: relative; }
+.filter-btn { height: 36px; padding: 0 12px; border: 1px solid var(--border-color, #e5e7eb); border-radius: var(--radius); font-size: 14px; background: var(--surface); color: var(--text); cursor: pointer; white-space: nowrap; }
+.filter-btn:hover { border-color: var(--primary); }
+.filter-count { font-size: 12px; color: var(--primary); font-weight: 600; }
+.multi-select-opts { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--surface); border: 1px solid var(--border-color, #e5e7eb); border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px 0; z-index: 100; min-width: 180px; white-space: nowrap; }
+.multi-select-opts.open { display: block; }
+.multi-select-opts label { display: flex; align-items: center; gap: 8px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+.multi-select-opts label:hover { background: var(--bg); }
+.multi-select-opts input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+
+/* Badge de categoria */
+.categoria-badge { background: var(--primary); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.03em; }
