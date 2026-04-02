@@ -3,6 +3,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const form = document.getElementById('ingrediente-form');
   const idInput = document.getElementById('ingrediente-id');
+  const overlay = document.getElementById('ingrediente-modal-overlay');
+  const modalTitulo = document.getElementById('modal-titulo-ingrediente');
+
+  function abrirModal(titulo = 'Novo ingrediente') {
+    modalTitulo.textContent = titulo;
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharModal() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+    form.reset();
+    idInput.value = '';
+  }
+
+  document.getElementById('btn-novo-ingrediente')?.addEventListener('click', () => {
+    fecharModal();
+    abrirModal('Novo ingrediente');
+  });
+
+  document.getElementById('fechar-modal-ingrediente')?.addEventListener('click', fecharModal);
+  document.getElementById('cancelar-edicao-ingrediente')?.addEventListener('click', fecharModal);
+  overlay?.addEventListener('click', (e) => { if (e.target === overlay) fecharModal(); });
 
   async function renderTable() {
     const tbody = document.getElementById('ingredientes-body');
@@ -34,11 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function resetForm() {
-    form.reset();
-    idInput.value = '';
-  }
-
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const id = idInput.value;
@@ -60,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) throw error;
         App.showToast('Ingrediente cadastrado com sucesso.');
       }
-      resetForm();
+      fecharModal();
       renderTable();
     } catch (err) {
       App.showToast(err?.message || 'Erro ao salvar ingrediente.', 'error');
@@ -81,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('ingrediente-preco').value = item.preco_compra;
         document.getElementById('ingrediente-estoque-atual').value = item.estoque_atual;
         document.getElementById('ingrediente-estoque-minimo').value = item.estoque_minimo;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        abrirModal('Editar ingrediente');
       } catch (err) {
         App.showToast('Erro ao carregar ingrediente.', 'error');
       }
@@ -99,6 +118,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  document.getElementById('cancelar-edicao-ingrediente')?.addEventListener('click', resetForm);
   renderTable();
 });

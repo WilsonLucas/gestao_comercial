@@ -18,64 +18,64 @@
             <h1>Ingredientes</h1>
             <p>Cadastre e monitore ingredientes com controle de estoque e preco.</p>
           </div>
+          <button class="btn btn-primary" id="btn-novo-ingrediente">+ Novo ingrediente</button>
         </section>
 
-        <section class="panel-grid two-columns align-start">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Novo ingrediente</h2>
-                <p>Preencha os dados para cadastrar ou editar um ingrediente.</p>
-              </div>
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Ingredientes cadastrados</h2>
+              <p>Edite ou remova ingredientes quando necessario.</p>
             </div>
-            <form id="ingrediente-form" class="form-grid">
-              <input type="hidden" id="ingrediente-id">
-              <label><span>Nome</span><input type="text" id="ingrediente-nome" required></label>
-              <label><span>Unidade</span>
-                <select id="ingrediente-unidade" required>
-                  <option value="kg">kg</option>
-                  <option value="g">g</option>
-                  <option value="un">un</option>
-                  <option value="litro">litro</option>
-                  <option value="ml">ml</option>
-                </select>
-              </label>
-              <label><span>Preco de compra</span><input type="number" id="ingrediente-preco" step="0.01" min="0" required></label>
-              <label><span>Estoque atual</span><input type="number" id="ingrediente-estoque-atual" step="0.001" min="0" required></label>
-              <label><span>Estoque minimo</span><input type="number" id="ingrediente-estoque-minimo" step="0.001" min="0" required></label>
-              <div class="form-actions full-width">
-                <button class="btn btn-primary" type="submit">Salvar ingrediente</button>
-                <button class="btn btn-secondary" type="button" id="cancelar-edicao-ingrediente">Cancelar edicao</button>
-              </div>
-            </form>
-          </article>
-
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Ingredientes cadastrados</h2>
-                <p>Edite ou remova ingredientes quando necessario.</p>
-              </div>
-            </div>
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Unidade</th>
-                    <th>Estoque atual</th>
-                    <th>Estoque minimo</th>
-                    <th>Preco compra</th>
-                    <th>Status</th>
-                    <th>Acoes</th>
-                  </tr>
-                </thead>
-                <tbody id="ingredientes-body"></tbody>
-              </table>
-            </div>
-          </article>
-        </section>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Unidade</th>
+                  <th>Estoque atual</th>
+                  <th>Estoque minimo</th>
+                  <th>Preco compra</th>
+                  <th>Status</th>
+                  <th>Acoes</th>
+                </tr>
+              </thead>
+              <tbody id="ingredientes-body"></tbody>
+            </table>
+          </div>
+        </article>
       </main>
+    </div>
+  </div>
+
+  <!-- Modal de cadastro/edicao -->
+  <div id="ingrediente-modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-titulo-ingrediente">Novo ingrediente</h2>
+        <button class="modal-close" id="fechar-modal-ingrediente">&times;</button>
+      </div>
+      <form id="ingrediente-form" class="form-grid">
+        <input type="hidden" id="ingrediente-id">
+        <label class="full-width"><span>Nome</span><input type="text" id="ingrediente-nome" required></label>
+        <label><span>Unidade</span>
+          <select id="ingrediente-unidade" required>
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="un">un</option>
+            <option value="litro">litro</option>
+            <option value="ml">ml</option>
+          </select>
+        </label>
+        <label><span>Preco de compra</span><input type="number" id="ingrediente-preco" step="0.01" min="0" required></label>
+        <label><span>Estoque atual</span><input type="number" id="ingrediente-estoque-atual" step="0.001" min="0" required></label>
+        <label><span>Estoque minimo</span><input type="number" id="ingrediente-estoque-minimo" step="0.001" min="0" required></label>
+        <div class="form-actions full-width">
+          <button class="btn btn-primary" type="submit">Salvar ingrediente</button>
+          <button class="btn btn-secondary" type="button" id="cancelar-edicao-ingrediente">Cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
 
