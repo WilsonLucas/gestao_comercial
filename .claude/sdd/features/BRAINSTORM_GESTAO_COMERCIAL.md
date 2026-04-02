@@ -160,9 +160,4 @@ O protótipo existente serve como base para o design da UI:
 - Paleta de cores e componentes: manter e evoluir
 - Páginas existentes (dashboard, compras, vendas, estoque, financeiro, usuarios): refatorar para consumir a API real
 
----
 
-## Próximo Passo
-
-Capturar os requisitos formais por perfil, regras de negócio e critérios de aceite.
-Documento gerado: `01_DEFINE_GESTAO_COMERCIAL.md`

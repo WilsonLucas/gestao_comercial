@@ -579,17 +579,4 @@ eliminando a necessidade de um serviço separado no MVP.
 | `frontend/pdv.html` | **Novo** (não existia no protótipo) |
 | `frontend/historico-dia.html` | **Novo** (não existia no protótipo) |
 
----
 
-## 15. Mapa do Workflow
-
-| Fase | Documento | Status |
-|---|---|---|
-| Fase 0 — Exploração | BRAINSTORM_GESTAO_COMERCIAL.md | ✅ Concluído |
-| Fase 1 — Requisitos | 01_DEFINE_GESTAO_COMERCIAL.md | ✅ Concluído |
-| Fase 2 — Arquitetura | 02_DESIGN_GESTAO_COMERCIAL.md | ✅ Concluído |
-| Fase 3 — Desenvolvimento | BUILD_REPORT_GESTAO_COMERCIAL.md | ✅ Concluído |
-| Deploy | Netlify + Supabase | ✅ Sistema no ar |
-| Fase 4 — Entrega | Aguardando testes da equipe | ⏳ Em andamento |
-
-**Status atual:** Sistema funcionando em producao com dados reais do cardapio. Aguardando testes da equipe para validacao do piloto.
