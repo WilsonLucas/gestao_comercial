@@ -1,7 +1,7 @@
 # Visão Geral do Projeto — Sistema de Gestão Comercial
 
 **Data:** 01/04/2026
-**Versão:** 1.1 — Piloto Pastelaria (sistema no ar)
+**Versão:** 1.2 — Piloto Pastelaria (sistema no ar)
 **Equipe:** Douglas, Lucas, Rômulo e Wilson Lucas
 
 ---
@@ -14,7 +14,9 @@
 | Arquitetura e design | ✅ Concluído |
 | Desenvolvimento do sistema | ✅ Concluído |
 | Deploy e acesso online | ✅ **No ar — Netlify + Supabase** |
-| Configuração dos dados reais da pastelaria | ⏳ Aguardando equipe |
+| Dados reais do cardápio inseridos no sistema | ✅ Concluído |
+| Melhorias de interface (UX) | ✅ Concluído |
+| Testes com a equipe | ⏳ Aguardando |
 
 ---
 
@@ -27,12 +29,12 @@ Os itens abaixo precisam ser respondidos pela equipe para configurar o sistema c
 | P1 | **Nome do sistema** — como o sistema será chamado? | Sócios | ⏳ Aguardando |
 | P2 | **Logo do sistema** — existe algum logo ou identidade visual definida? | Sócios | ⏳ Aguardando |
 | P3 | **Usuários padrão** — 4 usuários criados automaticamente (um por perfil), todos com senha padrão | Devs | ✅ Definido |
-| P4 | **Quais são os produtos vendidos na pastelaria?** — lista inicial (nome + preço de venda) | Sócios | ⏳ Aguardando |
-| P5 | **Quais são os ingredientes utilizados?** — lista dos insumos com unidade de medida e preço aproximado | Sócios | ⏳ Aguardando |
-| P6 | **Ficha técnica dos produtos** — quais ingredientes e em quais quantidades compõem cada produto? | Sócios | ⏳ Aguardando |
-| P7 | **Estoque mínimo por ingrediente** — a partir de qual quantidade o sistema deve alertar? | Sócios | ⏳ Aguardando |
+| P4 | **Produtos do cardápio** — 35 produtos inseridos com preços reais | Devs | ✅ Concluído |
+| P5 | **Ingredientes** — 25 ingredientes com unidade e preço estimado | Devs | ✅ Concluído |
+| P6 | **Ficha técnica** — 50g de cada recheio por pastel, definido pela equipe | Devs | ✅ Concluído |
+| P7 | **Estoque mínimo** — valor simbólico (0,1) definido pela equipe para início | Devs | ✅ Concluído |
 
-> Essas informações serão cadastradas diretamente no sistema, que já está no ar e pronto para uso.
+> Os dados do cardápio já estão no sistema. A equipe pode ajustar preços, quantidades e estoque mínimo diretamente pelas telas de Ingredientes e Produtos.
 
 ---
 
@@ -256,8 +258,19 @@ O frontend (HTML/CSS/JS) é hospedado no Netlify e acessa o banco Supabase diret
 
 | Etapa | O que acontece | Status |
 |---|---|---|
-| **Definições pendentes** | Equipe responde os itens P1, P2, P4, P5, P6 e P7 | ⏳ Aguardando |
-| **Cadastrar dados reais** | Inserir ingredientes, produtos e ficha técnica reais da pastelaria no sistema | ⏳ Aguardando P4-P7 |
-| **Testes com a equipe** | Cada membro acessa com seu perfil e valida o fluxo | ⏳ Aguardando |
+| **Nome e logo** | Equipe define nome e identidade visual (P1 e P2) | ⏳ Aguardando |
+| **Testes com a equipe** | Cada membro acessa com seu perfil e valida o fluxo real de operação | ⏳ Aguardando |
+| **Ajustar preços de compra** | Registrar as primeiras compras reais para corrigir os preços dos ingredientes | ⏳ Aguardando |
 | **Ajustes pós-teste** | Correções e melhorias identificadas durante os testes | ⬜ |
 | **Operação do piloto** | Sistema em uso real na pastelaria | ⬜ |
+
+---
+
+## 12. Melhorias de Interface Implementadas
+
+| Melhoria | Descrição |
+|---|---|
+| **Modal de cadastro — Produtos** | Formulário abre em janela modal ao clicar em "+ Novo produto" ou "Editar". Tabela ocupa largura total. |
+| **Modal de cadastro — Ingredientes** | Mesmo padrão: formulário em modal, tabela em largura total. |
+| **Ficha técnica expandível** | Botão ☰ em cada produto expande sub-tabela com ingredientes, quantidades, custos e margem de lucro. |
+| **Botão casinha (⌂)** | Aparece na topbar em todas as telas exceto na inicial. Leva ao início do perfil logado. |

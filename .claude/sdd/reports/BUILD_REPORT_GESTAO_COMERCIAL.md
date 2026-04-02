@@ -137,4 +137,37 @@ Todos os 10 HTMLs com scripts substituiram:
 
 ---
 
-## Status: SISTEMA NO AR E FUNCIONAL
+## Fase 4 — Dados Reais e Melhorias de UX (01/04/2026)
+
+### seed_cardapio.sql
+
+Script SQL com dados reais gerados a partir do cardápio da pastelaria:
+
+| Categoria | Qtd |
+|-----------|-----|
+| Ingredientes | 25 |
+| Pasteis salgados | 11 |
+| Pasteis doces | 6 |
+| Porcoes | 4 |
+| Mistos quentes | 3 |
+| Caldos de cana | 5 |
+| Sucos | 2 |
+| Cremes | 2 |
+| Aguas | 2 |
+| **Total produtos** | **35** |
+
+O script inclui limpeza dos dados de exemplo antes de inserir os dados reais. Regras aplicadas: 1 un de massa por pastel + 50g de cada recheio. Estoque minimo simbolico (0,1) para todos os ingredientes.
+
+### Melhorias de Interface
+
+| Arquivo alterado | Melhoria |
+|-----------------|----------|
+| `produtos.html` + `produtos.js` | Formulario convertido em modal. Tabela em largura total. Botao "+ Novo produto" e "Editar" abrem modal. |
+| `ingredientes.html` + `ingredientes.js` | Mesmo padrao de modal aplicado. |
+| `produtos.js` + `style.css` | Botao hamburguer (☰) expande ficha tecnica inline com ingredientes, custos e margem. |
+| `app.js` | Botao casinha (⌂) na topbar em todas as telas exceto a inicial do perfil. |
+| `style.css` | Correcao da variavel CSS `--color-primary` → `--primary` no cabecalho da ficha tecnica expandida. |
+
+---
+
+## Status: SISTEMA NO AR, DADOS REAIS INSERIDOS, AGUARDANDO TESTES DA EQUIPE
