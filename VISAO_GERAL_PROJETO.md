@@ -1,27 +1,38 @@
 # Visão Geral do Projeto — Sistema de Gestão Comercial
 
-**Data:** 29/03/2026
-**Versão:** 1.0 — Piloto Pastelaria
+**Data:** 01/04/2026
+**Versão:** 1.1 — Piloto Pastelaria (sistema no ar)
 **Equipe:** Douglas, Lucas, Rômulo e Wilson Lucas
+
+---
+
+## Status Atual do Projeto
+
+| Marco | Status |
+|---|---|
+| Definição de requisitos | ✅ Concluído |
+| Arquitetura e design | ✅ Concluído |
+| Desenvolvimento do sistema | ✅ Concluído |
+| Deploy e acesso online | ✅ **No ar — Netlify + Supabase** |
+| Configuração dos dados reais da pastelaria | ⏳ Aguardando equipe |
 
 ---
 
 ## ⚠️ Itens Pendentes de Definição
 
-Os itens abaixo precisam ser decididos pela equipe antes do início do desenvolvimento.
-Por favor, respondam cada ponto para que possamos avançar.
+Os itens abaixo precisam ser respondidos pela equipe para configurar o sistema com dados reais da pastelaria.
 
 | # | Pendência | Responsável | Status |
 |---|---|---|---|
-| P1 | **Nome do sistema** — como o sistema será chamado? (ex: "GestãoPro", "Minha Gestão", nome da pastelaria…) | Sócios | ⏳ Aguardando |
+| P1 | **Nome do sistema** — como o sistema será chamado? | Sócios | ⏳ Aguardando |
 | P2 | **Logo do sistema** — existe algum logo ou identidade visual definida? | Sócios | ⏳ Aguardando |
 | P3 | **Usuários padrão** — 4 usuários criados automaticamente (um por perfil), todos com senha padrão | Devs | ✅ Definido |
-| P4 | **Quais são os produtos vendidos na pastelaria?** — precisamos de uma lista inicial (nome + preço de venda) para configurar o sistema | Sócios | ⏳ Aguardando |
-| P5 | **Quais são os ingredientes utilizados?** — lista dos insumos com unidade de medida (kg, unidade, litro…) e preço aproximado de compra | Sócios | ⏳ Aguardando |
-| P6 | **Ficha técnica dos produtos** — quais ingredientes e em quais quantidades compõem cada produto? (ex: "Pastel de Frango usa 1 unidade de massa, 100g de frango, 50g de queijo") | Sócios | ⏳ Aguardando |
-| P7 | **Estoque mínimo por ingrediente** — a partir de qual quantidade o sistema deve alertar para reabastecer? | Sócios | ⏳ Aguardando |
+| P4 | **Quais são os produtos vendidos na pastelaria?** — lista inicial (nome + preço de venda) | Sócios | ⏳ Aguardando |
+| P5 | **Quais são os ingredientes utilizados?** — lista dos insumos com unidade de medida e preço aproximado | Sócios | ⏳ Aguardando |
+| P6 | **Ficha técnica dos produtos** — quais ingredientes e em quais quantidades compõem cada produto? | Sócios | ⏳ Aguardando |
+| P7 | **Estoque mínimo por ingrediente** — a partir de qual quantidade o sistema deve alertar? | Sócios | ⏳ Aguardando |
 
-> Essas informações serão usadas para configurar o sistema desde o início, com dados reais da pastelaria.
+> Essas informações serão cadastradas diretamente no sistema, que já está no ar e pronto para uso.
 
 ---
 
@@ -35,7 +46,7 @@ Um sistema web de gestão comercial desenvolvido para a pastelaria, que reúne e
 - **Controle financeiro** com cálculo automático de lucro e prejuízo por produto
 - **Painel do administrador** com visão completa do negócio
 
-O sistema será acessado pelo navegador (computador ou tablet), sem necessidade de instalar nada.
+O sistema é acessado pelo navegador (computador ou tablet), sem necessidade de instalar nada.
 
 ---
 
@@ -91,17 +102,21 @@ Cada usuário acessa apenas o que é necessário para sua função.
 **Quem usa:** Dono da empresa
 **O que pode fazer:** Acessa tudo — estoque, financeiro, PDV, relatórios e cadastro de usuários
 
+
 ### Perfil 02 — Financeiro
 **Quem usa:** Responsável pelo financeiro
 **O que pode fazer:** Visualiza compras realizadas e analisa lucro/prejuízo por produto e por mês
+
 
 ### Perfil 03 — Estoque
 **Quem usa:** Gestor de inventário
 **O que pode fazer:** Cadastra ingredientes e produtos (com ficha técnica), registra compras, acompanha estoque e lista de compras
 
+
 ### Perfil 04 — Operador
 **Quem usa:** Caixa / atendente
 **O que pode fazer:** Monta comanda com os produtos, fecha a venda, vê histórico do dia
+
 
 ---
 
@@ -110,7 +125,8 @@ Cada usuário acessa apenas o que é necessário para sua função.
 ### Tela de Login — todos os perfis
 | O que tem | Descrição |
 |---|---|
-| Logo + nome | ⏳ Pendente de definição (P1 e P2) |
+| Nome | ⏳ Pendente de definição (P1) |
+| Logo | ⏳ Pendente de definição (P2) |
 | Formulário | Campo de e-mail + campo de senha + botão Entrar |
 | Segurança | Cada usuário acessa apenas as telas do seu perfil |
 
@@ -120,7 +136,7 @@ Cada usuário acessa apenas o que é necessário para sua função.
 
 | Tela | O que mostra |
 |---|---|
-| **Dashboard** | Lucro do mês, total vendido, total gasto, quantidade de ingredientes em alerta, últimas 5 vendas |
+| **Dashboard** | Lucro do mês, total vendido, total gasto, quantidade de ingredientes em alerta, últimas vendas |
 | **Ingredientes** | Lista de todos os ingredientes com status (Normal / Atenção / Crítico), opções de cadastrar, editar e excluir |
 | **Produtos** | Lista de produtos com ficha técnica, custo calculado e margem de lucro |
 | **Compras** | Registro de nova compra de ingrediente e histórico de compras |
@@ -162,8 +178,6 @@ Cada usuário acessa apenas o que é necessário para sua função.
 
 ## 6. Regras do Negócio
 
-Estas são as regras que o sistema vai seguir automaticamente:
-
 | # | Regra |
 |---|---|
 | RN-01 | Não é possível vender um produto se faltar ingrediente no estoque |
@@ -171,7 +185,7 @@ Estas são as regras que o sistema vai seguir automaticamente:
 | RN-03 | Todo produto precisa ter pelo menos um ingrediente na ficha técnica para poder ser vendido |
 | RN-04 | Registrar uma compra sempre aumenta o estoque — o estoque nunca é diminuído manualmente |
 | RN-05 | Apenas o Administrador pode cadastrar, editar ou remover usuários |
-| RN-06 | O usuário Administrador padrão não pode ser removido do sistema |
+| RN-06 | Os 4 usuários padrão não podem ser desativados |
 | RN-07 | Vendas registradas não podem ser canceladas nesta versão |
 | RN-08 | O Operador não vê valores de custo nem margem de lucro — apenas o preço de venda |
 
@@ -179,11 +193,9 @@ Estas são as regras que o sistema vai seguir automaticamente:
 
 ## 7. O Que Não Estará na Primeira Versão
 
-Os itens abaixo foram avaliados e deixados para versões futuras, para manter o foco no essencial:
-
 | Item | Motivo |
 |---|---|
-| Gráficos e charts visuais | As tabelas já respondem as perguntas principais — gráficos ficam para a próxima versão |
+| Gráficos e charts visuais | As tabelas já respondem as perguntas principais |
 | Exportar para PDF ou Excel | Não é necessário para operar o dia a dia |
 | Cadastro de fornecedores | Não foi solicitado nesta fase |
 | Suporte a múltiplas lojas/filiais | O piloto é para uma loja |
@@ -217,43 +229,35 @@ o sistema atualiza o custo automaticamente a partir da próxima venda.
 
 ## 9. Alertas de Estoque
 
-O sistema classifica cada ingrediente em três níveis:
-
 | Status | Quando acontece | O que fazer |
 |---|---|---|
 | 🟢 **Normal** | Estoque está acima de 150% do mínimo | Nenhuma ação necessária |
 | 🟡 **Atenção** | Estoque entre 100% e 150% do mínimo | Planejar reposição em breve |
 | 🔴 **Crítico** | Estoque igual ou abaixo do mínimo | Ingrediente aparece na Lista de Compras |
 
-> Os limites de estoque mínimo por ingrediente serão definidos pela equipe (Pendência P7).
-
 ---
 
 ## 10. Tecnologia Utilizada
 
-Esta seção é informativa para a equipe técnica entender o que será construído.
-
 | Parte do sistema | Tecnologia | Por quê |
 |---|---|---|
 | Telas (frontend) | HTML + CSS + JavaScript | Mesma base do protótipo já desenvolvido |
-| Servidor (backend) | Node.js + Express | Mesmo ecossistema do frontend, curva mínima de aprendizado |
-| Banco de dados | PostgreSQL | Banco relacional robusto, ideal para o modelo de dados do sistema |
-| Autenticação | JWT (token seguro) | Substitui o sistema inseguro do protótipo (que usava o navegador) |
-| Hospedagem | Railway ou Render | Plataformas simples e de baixo custo para o piloto |
+| Banco de dados | PostgreSQL (Supabase) | Banco relacional robusto, gerenciado na nuvem |
+| Autenticação | pgcrypto (senha hasheada no banco) | Sem dependência de serviço externo de auth |
+| Backend / API | Supabase (RPC functions + REST) | Elimina a necessidade de servidor próprio |
+| Hospedagem frontend | Netlify | Deploy automático via GitHub, sem custo |
 
-**Diferença principal em relação ao protótipo atual:**
-O protótipo salva os dados no navegador — se limpar o cache ou usar outro dispositivo, os dados somem.
-O sistema real salva os dados em um servidor, acessível por qualquer dispositivo, por qualquer usuário autorizado.
+**Como funciona na prática:**
+O frontend (HTML/CSS/JS) é hospedado no Netlify e acessa o banco Supabase diretamente pelo navegador, sem servidor intermediário. Isso permite que qualquer membro da equipe acesse o sistema de qualquer dispositivo com internet.
 
 ---
 
 ## 11. Próximos Passos
 
-| Etapa | O que acontece |
-|---|---|
-| **1. Definições pendentes** | Equipe responde os itens da seção ⚠️ (P1 a P7) |
-| **2. Validação deste documento** | Todos confirmam que o descrito reflete o esperado |
-| **3. Início do desenvolvimento** | Desenvolvedores iniciam a construção com base neste documento |
-| **4. Entrega parcial** | Demonstração das primeiras telas funcionando com dados reais |
-| **5. Ajustes e testes** | Equipe do negócio testa e aponta correções |
-| **6. Lançamento do piloto** | Sistema em uso na pastelaria |
+| Etapa | O que acontece | Status |
+|---|---|---|
+| **Definições pendentes** | Equipe responde os itens P1, P2, P4, P5, P6 e P7 | ⏳ Aguardando |
+| **Cadastrar dados reais** | Inserir ingredientes, produtos e ficha técnica reais da pastelaria no sistema | ⏳ Aguardando P4-P7 |
+| **Testes com a equipe** | Cada membro acessa com seu perfil e valida o fluxo | ⏳ Aguardando |
+| **Ajustes pós-teste** | Correções e melhorias identificadas durante os testes | ⬜ |
+| **Operação do piloto** | Sistema em uso real na pastelaria | ⬜ |

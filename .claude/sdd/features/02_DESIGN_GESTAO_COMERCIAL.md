@@ -2,16 +2,21 @@
 
 **Fase:** 2 — Arquitetura
 **Data:** 2026-03-29
-**Status:** Aprovado para /construir
+**Atualizado:** 2026-04-01
+**Status:** ✅ Implementado e no ar
 **Origem:** 01_DEFINE_GESTAO_COMERCIAL.md
+
+> **Nota:** A arquitetura original previa Node.js + Express + Railway. Após decisão da equipe, o backend foi migrado para Supabase (PostgreSQL + RPC functions) e o frontend hospedado no Netlify. O design abaixo reflete a arquitetura atual implementada.
 
 ---
 
 ## 1. Diagrama de Arquitetura
 
+> Arquitetura implementada: Supabase substitui o backend Node.js.
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        BROWSER                              │
+│                   NETLIFY (frontend)                        │
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
 │  │  login.html  │  │ dashboard.html│  │  pdv.html  etc.  │  │
@@ -19,23 +24,26 @@
 │         │                 │                    │            │
 │         └─────────────────┴────────────────────┘            │
 │                           │                                 │
-│                     assets/js/api.js                        │
-│               (fetch wrapper + JWT header)                  │
+│              assets/js/supabase-client.js                   │
+│               (SDK Supabase via CDN)                        │
 └───────────────────────────┬─────────────────────────────────┘
-                            │ HTTPS / JSON
+                            │ HTTPS / PostgREST + RPC
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  BACKEND — Node.js + Express                │
+│                  SUPABASE (backend-as-a-service)            │
 │                                                             │
-│  ┌─────────────┐   ┌──────────────┐   ┌─────────────────┐  │
-│  │ middleware/ │   │   routes/    │   │  controllers/   │  │
-│  │  auth.js    │→  │  *.routes.js │→  │  *.controller   │  │
-│  │  roles.js   │   │              │   │                 │  │
-│  └─────────────┘   └──────────────┘   └────────┬────────┘  │
-│                                                 │           │
-└─────────────────────────────────────────────────┼───────────┘
-                                                  │ SQL (pg)
-                                                  ▼
+│  ┌─────────────────┐   ┌──────────────────────────────────┐ │
+│  │  PostgREST API  │   │       RPC Functions              │ │
+│  │  db.from(table) │   │  autenticar()                    │ │
+│  │  .select()      │   │  criar_usuario()                 │ │
+│  │  .insert()      │   │  alterar_senha()                 │ │
+│  │  .update()      │   │  fechar_venda()  ← atomico       │ │
+│  │  .delete()      │   │  dashboard_metrics()             │ │
+│  └────────┬────────┘   └───────────────┬──────────────────┘ │
+│           │                            │                    │
+└───────────┼────────────────────────────┼────────────────────┘
+            │            SQL             │
+            ▼                            ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    PostgreSQL Database                      │
 │                                                             │
@@ -578,12 +586,10 @@ eliminando a necessidade de um serviço separado no MVP.
 ```
 ✅ Fase 0: /explorar   → BRAINSTORM_GESTAO_COMERCIAL.md
 ✅ Fase 1: /definir    → 01_DEFINE_GESTAO_COMERCIAL.md
-✅ Fase 2: /projetar   → 02_DESIGN_GESTAO_COMERCIAL.md  ← CONCLUÍDA
-➡️ Fase 3: /construir → 02_DESIGN_GESTAO_COMERCIAL.md
-⬜ Fase 4: /entregar
+✅ Fase 2: /projetar   → 02_DESIGN_GESTAO_COMERCIAL.md
+✅ Fase 3: /construir  → BUILD_REPORT_GESTAO_COMERCIAL.md
+✅ Deploy              → Netlify + Supabase — SISTEMA NO AR
+⬜ Fase 4: /entregar   → apos validacao com dados reais da pastelaria
 ```
 
-**Próximo passo:**
-```
-/construir .claude/sdd/features/02_DESIGN_GESTAO_COMERCIAL.md
-```
+**Status atual:** Sistema funcionando em producao. Aguardando dados reais (P4-P7) para iniciar operacao do piloto.

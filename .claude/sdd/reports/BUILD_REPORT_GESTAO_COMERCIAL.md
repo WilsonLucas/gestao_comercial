@@ -1,78 +1,115 @@
 # RELATORIO DE BUILD: Gestao Comercial
 
+**Data:** 01/04/2026
+**Status:** SISTEMA NO AR
+
+---
+
 ## Resumo
 
 | Metrica | Valor |
 |---------|-------|
-| Tarefas | 16/16 concluidas |
-| Arquivos criados (backend) | 22 |
-| Arquivos criados/refatorados (frontend) | 24 |
-| Total de arquivos | 46 |
-| Agentes usados | (direto) |
+| Fases concluidas | Build + Migracao Supabase + Deploy |
+| Arquivos JS migrados | 11 |
+| HTMLs atualizados | 10 |
+| Arquivos removidos (backend Node.js) | 29 |
+| Arquivos criados (Supabase) | 4 |
+| Frontend hospedado | Netlify |
+| Banco de dados | Supabase (PostgreSQL) |
 
 ---
 
-## Arquivos Backend Criados
+## Fase 1 — Build Inicial (Node.js + Express)
 
-| Arquivo | Proposito | Status |
-|---------|-----------|--------|
-| `backend/package.json` | Dependencias e scripts npm | OK |
-| `backend/.env.example` | Variaveis de ambiente de exemplo | OK |
-| `backend/src/app.js` | Entry point Express, serve static frontend | OK |
-| `backend/src/config/database.js` | Pool de conexao PostgreSQL | OK |
-| `backend/src/middleware/auth.js` | Verificacao JWT | OK |
-| `backend/src/middleware/roles.js` | Autorizacao por perfil | OK |
-| `backend/src/db/migrations/001_schema_inicial.sql` | Schema completo do banco | OK |
-| `backend/src/db/migrate.js` | Executa migration SQL | OK |
-| `backend/src/db/seed.js` | Dados iniciais: admin + pastelaria | OK |
-| `backend/src/controllers/auth.controller.js` | POST /api/auth/login | OK |
-| `backend/src/controllers/ingredientes.controller.js` | CRUD ingredientes | OK |
-| `backend/src/controllers/produtos.controller.js` | CRUD produtos + ficha tecnica | OK |
-| `backend/src/controllers/compras.controller.js` | CRUD compras + atualiza estoque | OK |
-| `backend/src/controllers/vendas.controller.js` | POST venda (transacao atomica RN-01) | OK |
-| `backend/src/controllers/financeiro.controller.js` | Resumo mensal e desempenho | OK |
-| `backend/src/controllers/usuarios.controller.js` | CRUD usuarios (RN-05, RN-06) | OK |
-| `backend/src/controllers/lista-compras.controller.js` | Ingredientes abaixo do minimo | OK |
-| `backend/src/controllers/dashboard.controller.js` | Metricas + ultimas vendas | OK |
-| `backend/src/routes/auth.routes.js` | Rota de login | OK |
-| `backend/src/routes/ingredientes.routes.js` | Rotas CRUD ingredientes | OK |
-| `backend/src/routes/produtos.routes.js` | Rotas CRUD produtos | OK |
-| `backend/src/routes/compras.routes.js` | Rotas CRUD compras | OK |
-| `backend/src/routes/vendas.routes.js` | Rotas de vendas | OK |
-| `backend/src/routes/financeiro.routes.js` | Rotas financeiro | OK |
-| `backend/src/routes/usuarios.routes.js` | Rotas usuarios | OK |
-| `backend/src/routes/lista-compras.routes.js` | Rota lista de compras | OK |
-| `backend/src/routes/dashboard.routes.js` | Rota dashboard | OK |
+Sistema construido inicialmente com backend Node.js + Express + PostgreSQL.
 
-## Arquivos Frontend Criados/Refatorados
+### Backend criado e posteriormente removido
 
-| Arquivo | Tipo | Status |
-|---------|------|--------|
-| `assets/js/api.js` | NOVO - fetch wrapper com JWT | OK |
-| `assets/js/app.js` | REFATORADO - menu por perfil via JWT | OK |
-| `assets/js/auth.js` | REFATORADO - login via API | OK |
-| `assets/js/dashboard.js` | REFATORADO - consome /api/dashboard | OK |
-| `assets/js/ingredientes.js` | NOVO - CRUD via API | OK |
-| `assets/js/produtos.js` | NOVO - CRUD + ficha tecnica | OK |
-| `assets/js/compras.js` | REFATORADO - usa API | OK |
-| `assets/js/lista-compras.js` | NOVO - lista ingredientes criticos | OK |
-| `assets/js/pdv.js` | NOVO - carrinho + POST /api/vendas | OK |
-| `assets/js/historico-dia.js` | NOVO - GET /api/vendas/hoje | OK |
-| `assets/js/financeiro.js` | REFATORADO - usa API | OK |
-| `assets/js/usuarios.js` | REFATORADO - usa API | OK |
-| `index.html` | REFATORADO - redirect via localStorage JWT | OK |
-| `login.html` | REFATORADO - inclui api.js | OK |
-| `dashboard.html` | REFATORADO - inclui api.js | OK |
-| `ingredientes.html` | NOVO - CRUD ingredientes | OK |
-| `estoque.html` | REFATORADO - redirect para ingredientes.html | OK |
-| `produtos.html` | NOVO - CRUD + ficha tecnica | OK |
-| `compras.html` | REFATORADO - select ingrediente via API | OK |
-| `lista-compras.html` | NOVO | OK |
-| `pdv.html` | NOVO - carrinho de vendas | OK |
-| `historico-dia.html` | NOVO | OK |
-| `financeiro.html` | REFATORADO - inclui api.js | OK |
-| `usuarios.html` | REFATORADO - perfis corretos | OK |
-| `vendas.html` | REFATORADO - redirect para pdv.html | OK |
+| Arquivo | Proposito |
+|---------|-----------|
+| `backend/package.json` | Dependencias e scripts npm |
+| `backend/src/app.js` | Entry point Express |
+| `backend/src/config/database.js` | Pool de conexao PostgreSQL |
+| `backend/src/middleware/auth.js` | Verificacao JWT |
+| `backend/src/middleware/roles.js` | Autorizacao por perfil |
+| `backend/src/db/migrations/001_schema_inicial.sql` | Schema completo |
+| `backend/src/controllers/*.controller.js` | 8 controllers |
+| `backend/src/routes/*.routes.js` | 8 arquivos de rotas |
+
+> Backend removido integralmente na Fase 2 (migracao para Supabase).
+
+---
+
+## Fase 2 — Migracao para Supabase
+
+**Motivo:** Impossibilidade de hospedar backend Node.js no GitHub Pages.
+**Solucao:** Migrar toda a logica para Supabase (PostgreSQL + RPC functions), mantendo o frontend como HTML/CSS/JS puro.
+
+### Arquivos criados
+
+| Arquivo | Proposito |
+|---------|-----------|
+| `supabase/migrations/001_schema_supabase.sql` | Schema completo com 7 tabelas e 5 RPC functions |
+| `supabase/seed.sql` | 4 usuarios padrao + dados de exemplo da pastelaria |
+| `assets/js/supabase-client.js` | Inicializacao do SDK Supabase via CDN |
+| `.nojekyll` | Compatibilidade com GitHub Pages |
+| `SUPABASE_SETUP.md` | Guia de configuracao do Supabase |
+
+### RPC Functions no banco (substituem os controllers)
+
+| Funcao | Equivalente anterior |
+|--------|----------------------|
+| `autenticar(p_email, p_senha)` | POST /api/auth/login |
+| `criar_usuario(p_nome, p_email, p_senha, p_perfil)` | POST /api/usuarios |
+| `alterar_senha(p_usuario_id, p_nova_senha)` | PUT /api/usuarios/:id |
+| `fechar_venda(p_itens, p_operador_id)` | POST /api/vendas (atomico) |
+| `dashboard_metrics()` | GET /api/dashboard |
+
+### Arquivos JS migrados (API → Supabase)
+
+| Arquivo | Mudanca principal |
+|---------|-------------------|
+| `assets/js/app.js` | Sessao via `sgc_user` no localStorage (antes: JWT) |
+| `assets/js/auth.js` | Login via `db.rpc('autenticar')` (antes: POST /api/auth/login) |
+| `assets/js/dashboard.js` | `db.rpc('dashboard_metrics')` + joins via Supabase |
+| `assets/js/ingredientes.js` | `db.from('ingredientes')` CRUD completo |
+| `assets/js/produtos.js` | `db.from('produtos').select(ficha_tecnica join)` |
+| `assets/js/compras.js` | Insert compra + update estoque via Supabase |
+| `assets/js/pdv.js` | `db.rpc('fechar_venda')` atomico |
+| `assets/js/financeiro.js` | Joins vendas + compras, agrupamento client-side |
+| `assets/js/usuarios.js` | `db.rpc('criar_usuario')` + `db.rpc('alterar_senha')` |
+| `assets/js/lista-compras.js` | `db.from('ingredientes')` + filtro status client-side |
+| `assets/js/historico-dia.js` | `db.from('vendas').gte/lte('data', hoje)` |
+
+### HTMLs atualizados
+
+Todos os 10 HTMLs com scripts substituiram:
+```html
+<!-- antes -->
+<script src="assets/js/api.js"></script>
+
+<!-- depois -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js"></script>
+```
+
+---
+
+## Fase 3 — Deploy
+
+| Servico | URL | Status |
+|---------|-----|--------|
+| Frontend (Netlify) | deploy automatico via GitHub | ✅ No ar |
+| Banco de dados (Supabase) | projeto WilsonLucas's Project | ✅ Ativo |
+
+**Credenciais de acesso ao sistema:**
+
+| E-mail | Senha | Perfil |
+|--------|-------|--------|
+| admin@admin.com | — | administrador |
+| financeiro@admin.com | — | financeiro |
+| estoque@admin.com | — | estoque |
+| operador@admin.com | — | operador |
 
 ---
 
@@ -80,61 +117,24 @@
 
 | Regra | Descricao | Onde |
 |-------|-----------|------|
-| RN-01 | Bloquear venda se estoque insuficiente (transacao atomica, rollback com 422) | vendas.controller.js |
-| RN-02 | custo_unitario calculado com preco_compra atual do ingrediente | vendas.controller.js |
-| RN-05 | Rotas de usuarios restritas a administrador | usuarios.routes.js |
-| RN-06 | Seed admin (admin@admin.com) nao pode ser deletado | usuarios.controller.js |
-| RN-08 | GET /api/produtos para operador nao retorna preco_compra nem custo | produtos.controller.js |
+| RN-01 | Bloquear venda se estoque insuficiente (atomico via RPC) | `fechar_venda()` no Supabase |
+| RN-02 | Custo calculado com preco_compra atual do ingrediente | `fechar_venda()` no Supabase |
+| RN-03 | Produto precisa de ficha tecnica para ser vendido | Validado no `fechar_venda()` |
+| RN-05 | Gestao de usuarios restrita ao administrador | Menu filtrado por perfil em `app.js` |
+| RN-06 | 4 usuarios padrao nao podem ser desativados | Validado em `usuarios.js` por email |
+| RN-08 | Operador nao ve custo nem margem — apenas preco de venda | `pdv.js` nao exibe campos de custo |
 
 ---
 
-## Controle de Acesso Implementado
+## Controle de Acesso
 
-| Perfil | Paginas/Rotas |
-|--------|--------------|
-| administrador | Tudo |
-| financeiro | compras (somente leitura), financeiro |
+| Perfil | Telas disponiveis |
+|--------|------------------|
+| administrador | dashboard, ingredientes, produtos, compras, lista-compras, pdv, financeiro, usuarios |
+| financeiro | compras, financeiro |
 | estoque | ingredientes, produtos, compras, lista-compras |
 | operador | pdv, historico-dia |
 
 ---
 
-## Passos para Iniciar o Sistema
-
-```bash
-# 1. Entrar na pasta do backend
-cd backend
-
-# 2. Instalar dependencias (requer Node.js instalado)
-npm install
-
-# 3. Copiar .env.example para .env e configurar
-cp .env.example .env
-# Editar .env com DATABASE_URL, JWT_SECRET e PORT
-
-# 4. Criar banco de dados PostgreSQL e executar migration
-npm run migrate
-
-# 5. Popular banco com dados iniciais
-npm run seed
-
-# 6. Iniciar servidor (desenvolvimento)
-npm run dev
-
-# 7. Acessar no navegador
-# http://localhost:3000
-# Login: admin@admin.com / [senha]
-```
-
----
-
-## Observacao sobre npm install
-
-O npm nao estava disponivel no ambiente de execucao do agente (Git Bash sem Node.js no PATH).
-O package.json esta criado corretamente. Execute `npm install` manualmente no diretorio `backend/` apos instalar o Node.js.
-
----
-
-## Status: COMPLETO
-
-Todos os 46 arquivos foram criados. O sistema esta pronto para uso apos execucao do `npm install`, configuracao do `.env` e execucao da migration + seed.
+## Status: SISTEMA NO AR E FUNCIONAL
