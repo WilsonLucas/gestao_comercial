@@ -102,11 +102,14 @@ const App = (() => {
 
     if (topbar) {
       const initials = usuario.nome?.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase() || 'AD';
+      const homePage = menu[0]?.[2] || 'dashboard.html';
+      const isHome = page === (menu[0]?.[0] || 'dashboard');
       topbar.innerHTML = `
         <div>
           <strong>${new Date().toLocaleDateString('pt-BR', { dateStyle: 'full' })}</strong>
         </div>
         <div class="topbar-user">
+          ${!isHome ? `<a class="btn btn-secondary" href="${homePage}" title="Voltar para o inicio">&#8962;</a>` : ''}
           <div>
             <strong>${usuario.nome || 'Usuario'}</strong><br>
             <small>${perfil}</small>
