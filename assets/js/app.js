@@ -5,7 +5,7 @@ const MENU_POR_PERFIL = {
     ['produtos',      'Produtos',         'produtos.html'],
     ['compras',       'Compras',          'compras.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
-    ['pdv',           'PDV',              'pdv.html'],
+    ['pdv',           'PDV - TESTE',      'pdv.html'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
@@ -20,7 +20,7 @@ const MENU_POR_PERFIL = {
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
   ],
   operador: [
-    ['pdv',           'PDV',              'pdv.html'],
+    ['pdv',           'PDV - TESTE',      'pdv.html'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
 };
