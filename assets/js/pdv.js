@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     App.setLoading(btnFinalizar, true);
     try {
       const { data, error } = await db.rpc('fechar_venda', {
-        p_itens: JSON.stringify(itens),
+        p_itens: itens,
         p_operador_id: user?.id
       });
 
