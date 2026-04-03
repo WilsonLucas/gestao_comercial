@@ -1,3 +1,0 @@
-# Rewrite silencioso: mantém URLs antigas funcionando após mover HTMLs para pages/
-# Status 200 = rewrite (URL não muda no browser)
-/*.html  /pages/:splat  200
