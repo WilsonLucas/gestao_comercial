@@ -1,7 +1,6 @@
 const MENU_POR_PERFIL = {
   administrador: [
     ['inicio',        'Inicio',           'inicio.html'],
-    ['dashboard',     'Dashboard',        'dashboard.html'],
     ['ingredientes',  'Ingredientes',     'ingredientes.html'],
     ['produtos',      'Produtos',         'produtos.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],

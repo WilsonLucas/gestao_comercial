@@ -17,25 +17,25 @@
           <div>
             <span class="eyebrow">Resultados</span>
             <h1>Financeiro</h1>
-            <p>Analise gastos, vendas e lucro total ou mensal automaticamente.</p>
+            <p>Indicadores do mes atual e historico consolidado de gastos, vendas e lucro.</p>
           </div>
         </section>
 
         <section class="stats-grid" id="finance-stats"></section>
 
-        <section class="panel-grid two-columns">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Lucro mensal</h2>
-                <p>Evolucao do lucro consolidado mes a mes.</p>
-              </div>
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Desempenho mensal</h2>
+              <p>Comparativo de gastos, vendas e lucro mes a mes.</p>
             </div>
-            <div class="chart-wrapper">
-              <canvas id="financeChart"></canvas>
-            </div>
-          </article>
+          </div>
+          <div class="chart-wrapper large-chart">
+            <canvas id="financeChart"></canvas>
+          </div>
+        </article>
 
+        <section class="panel-grid two-columns">
           <article class="panel">
             <div class="panel-header">
               <div>
@@ -54,6 +54,28 @@
                   </tr>
                 </thead>
                 <tbody id="financeiro-body"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Ultimas vendas</h2>
+                <p>Resumo das movimentacoes mais recentes.</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Itens</th>
+                    <th>Total</th>
+                    <th>Lucro</th>
+                  </tr>
+                </thead>
+                <tbody id="ultimas-vendas-body"></tbody>
               </table>
             </div>
           </article>

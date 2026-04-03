@@ -2,62 +2,82 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (document.body.dataset.page !== 'financeiro') return;
 
   try {
-    const [{ data: vendas }, { data: compras }] = await Promise.all([
-      db.from('vendas').select('data, total, lucro').order('data'),
+    const [{ data: metricas }, { data: vendasRaw }, { data: comprasRaw }] = await Promise.all([
+      db.rpc('dashboard_metrics'),
+      db.from('vendas').select('data, total, lucro, criado_em, itens_venda(quantidade, produtos(nome))').order('criado_em', { ascending: false }),
       db.from('compras').select('data, total').order('data')
     ]);
 
-    // Resumo mensal agrupado por mes
+    const m = metricas || {};
+
+    // ── Cards do mes atual ────────────────────────────────────────────
+    document.getElementById('finance-stats').innerHTML = [
+      ['Lucro do mes',    App.formatCurrency(m.lucro_mes),    'Resultado liquido do mes atual'],
+      ['Total vendido',   App.formatCurrency(m.vendido_mes),  'Receita bruta do mes atual'],
+      ['Total gasto',     App.formatCurrency(m.gasto_mes),    'Compras registradas no mes'],
+      ['Estoque critico', m.estoque_critico ?? 0,             'Ingredientes exigindo atencao']
+    ].map(([label, value, trend]) => `
+      <article class="stat-card">
+        <div class="label">${label}</div>
+        <div class="value">${value}</div>
+        <div class="trend">${trend}</div>
+      </article>
+    `).join('');
+
+    // ── Resumo mensal ─────────────────────────────────────────────────
     const mapa = {};
-    (vendas || []).forEach((v) => {
+    (vendasRaw || []).forEach((v) => {
       const k = App.monthKey(v.data);
       if (!mapa[k]) mapa[k] = { mes: k, gasto: 0, vendido: 0, lucro: 0 };
       mapa[k].vendido += Number(v.total);
       mapa[k].lucro   += Number(v.lucro);
     });
-    (compras || []).forEach((c) => {
+    (comprasRaw || []).forEach((c) => {
       const k = App.monthKey(c.data);
       if (!mapa[k]) mapa[k] = { mes: k, gasto: 0, vendido: 0, lucro: 0 };
       mapa[k].gasto += Number(c.total);
     });
     const resumo = Object.values(mapa).sort((a, b) => a.mes.localeCompare(b.mes));
 
-    // Metricas acumuladas
-    const totalGasto   = (compras || []).reduce((s, c) => s + Number(c.total), 0);
-    const totalVendido = (vendas  || []).reduce((s, v) => s + Number(v.total), 0);
-    const lucroTotal   = (vendas  || []).reduce((s, v) => s + Number(v.lucro), 0);
-    const mesAtual     = App.monthKey(App.today());
-    const lucroMes     = (vendas || []).filter((v) => App.monthKey(v.data) === mesAtual).reduce((s, v) => s + Number(v.lucro), 0);
+    document.getElementById('financeiro-body').innerHTML = resumo.length
+      ? resumo.map((item) => `
+          <tr>
+            <td>${App.formatMonth(item.mes)}</td>
+            <td>${App.formatCurrency(item.gasto)}</td>
+            <td>${App.formatCurrency(item.vendido)}</td>
+            <td class="${item.lucro >= 0 ? 'metric-positive' : 'metric-negative'}">${App.formatCurrency(item.lucro)}</td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="4" class="empty-state">Sem dados financeiros cadastrados.</td></tr>';
 
-    document.getElementById('finance-stats').innerHTML = [
-      ['Total gasto',   App.formatCurrency(totalGasto),   'Compras acumuladas'],
-      ['Total vendido', App.formatCurrency(totalVendido), 'Receita acumulada'],
-      ['Lucro total',   App.formatCurrency(lucroTotal),   'Margem total registrada'],
-      ['Lucro do mes',  App.formatCurrency(lucroMes),     'Resultado do mes atual']
-    ].map(([label, value, info]) => `
-      <article class="stat-card">
-        <div class="label">${label}</div>
-        <div class="value">${value}</div>
-        <div class="trend">${info}</div>
-      </article>
-    `).join('');
+    // ── Ultimas vendas ────────────────────────────────────────────────
+    const ultimasVendas = (vendasRaw || []).slice(0, 5);
+    document.getElementById('ultimas-vendas-body').innerHTML = ultimasVendas.length
+      ? ultimasVendas.map((venda) => {
+          const itensStr = (venda.itens_venda || []).map((i) => `${App.escapeHtml(i.produtos?.nome || '?')} x${i.quantidade}`).join(', ');
+          return `
+            <tr>
+              <td>${App.formatDate(venda.data)}</td>
+              <td>${itensStr || '-'}</td>
+              <td>${App.formatCurrency(venda.total)}</td>
+              <td class="metric-positive">${App.formatCurrency(venda.lucro)}</td>
+            </tr>
+          `;
+        }).join('')
+      : '<tr><td colspan="4" class="empty-state">Nenhuma venda cadastrada.</td></tr>';
 
-    document.getElementById('financeiro-body').innerHTML = resumo.length ? resumo.map((item) => `
-      <tr>
-        <td>${App.formatMonth(item.mes)}</td>
-        <td>${App.formatCurrency(item.gasto)}</td>
-        <td>${App.formatCurrency(item.vendido)}</td>
-        <td class="${item.lucro >= 0 ? 'metric-positive' : 'metric-negative'}">${App.formatCurrency(item.lucro)}</td>
-      </tr>
-    `).join('') : '<tr><td colspan="4" class="empty-state">Sem dados financeiros cadastrados.</td></tr>';
-
+    // ── Grafico: Gastos + Vendas + Lucro por mes ──────────────────────
     const ctx = document.getElementById('financeChart');
     if (ctx && typeof Chart !== 'undefined') {
       new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: resumo.map((item) => App.formatMonth(item.mes)),
-          datasets: [{ label: 'Lucro mensal', data: resumo.map((item) => item.lucro), borderColor: '#335cff', backgroundColor: 'rgba(51,92,255,0.15)', fill: true, tension: 0.35 }]
+          datasets: [
+            { label: 'Gastos',  data: resumo.map((i) => i.gasto),   backgroundColor: '#c7d2fe' },
+            { label: 'Vendas',  data: resumo.map((i) => i.vendido), backgroundColor: '#60a5fa' },
+            { label: 'Lucro',   data: resumo.map((i) => i.lucro),   type: 'line', borderColor: '#0f9f6e', backgroundColor: '#0f9f6e', tension: 0.3 }
+          ]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
