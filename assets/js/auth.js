@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (page === 'login' && App.isLoggedIn()) {
-    window.location.replace('dashboard.html');
+    window.location.replace('inicio.html');
     return;
   }
 
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessao = { ...data, expira_em: Date.now() + (8 * 60 * 60 * 1000) };
         localStorage.setItem('sgc_user', JSON.stringify(sessao));
         App.showToast('Login realizado com sucesso!');
-        setTimeout(() => window.location.replace('dashboard.html'), 600);
+        setTimeout(() => window.location.replace('inicio.html'), 600);
       } catch (err) {
         App.showToast(err?.message || 'E-mail ou senha invalidos.', 'error');
       }

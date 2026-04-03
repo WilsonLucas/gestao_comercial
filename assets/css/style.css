@@ -224,6 +224,113 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 .badge.categoria-misto-quente    { background: #c4870a; color: #fff; }
 .badge.categoria-bebidas         { background: #1a6bbf; color: #fff; }
 
+/* ── Pagina Inicio ──────────────────────────────────────────────── */
+.inicio-hero {
+  text-align: center;
+  padding: 40px 24px 16px;
+}
+.inicio-logo-text {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  color: var(--primary-dark);
+}
+.inicio-saudacao {
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 8px 0 32px;
+}
+
+/* Cards de modulos */
+.inicio-cards-grid {
+  display: grid;
+  gap: 16px;
+  padding: 0 24px 40px;
+}
+.inicio-cols-2   { grid-template-columns: repeat(2, 1fr); }
+.inicio-cols-auto { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+
+.inicio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  text-align: center;
+}
+.inicio-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 24px 55px rgba(51,92,255,0.12);
+}
+.inicio-card-destaque {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, #eef3ff, #dde6ff);
+}
+.inicio-card-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.inicio-card strong { font-size: 1rem; color: var(--text); }
+.inicio-card span   { font-size: 0.82rem; color: var(--muted); }
+
+/* Layout operador: botao PDV centralizado */
+.inicio-operador {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+.inicio-pdv-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 64px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 1.4rem;
+  font-weight: 700;
+  box-shadow: 0 12px 40px rgba(51,92,255,0.3);
+  transition: background 0.15s, transform 0.15s;
+}
+.inicio-pdv-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+.inicio-pdv-icon { font-size: 3rem; }
+.inicio-link-secundario { font-size: 0.9rem; }
+
+/* Alerta de estoque */
+.inicio-alerta-estoque {
+  margin: 0 24px 32px;
+  padding: 20px 24px;
+  border-radius: var(--radius);
+  border: 2px solid var(--warning);
+  background: #fffbeb;
+}
+.inicio-alerta-estoque.normal {
+  border-color: var(--success);
+  background: #f0faf5;
+}
+.inicio-alerta-estoque h3 { margin: 0 0 12px; font-size: 0.95rem; color: var(--warning); }
+.inicio-alerta-estoque.normal h3 { color: var(--success); }
+.inicio-alerta-estoque ul { margin: 0; padding: 0 0 0 4px; list-style: none; display: grid; gap: 8px; }
+.inicio-alerta-estoque li { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; flex-wrap: wrap; }
+
+@media (max-width: 600px) {
+  .inicio-cols-2    { grid-template-columns: 1fr; }
+  .inicio-cols-auto { grid-template-columns: repeat(2, 1fr); }
+  .inicio-pdv-btn   { padding: 36px 48px; font-size: 1.2rem; }
+}
+
 /* Modal de confirmacao (App.confirmar) */
 .confirm-overlay {
   position: fixed; inset: 0; background: rgba(31,41,55,0.55);

@@ -1,5 +1,6 @@
 const MENU_POR_PERFIL = {
   administrador: [
+    ['inicio',        'Inicio',           'inicio.html'],
     ['dashboard',     'Dashboard',        'dashboard.html'],
     ['ingredientes',  'Ingredientes',     'ingredientes.html'],
     ['produtos',      'Produtos',         'produtos.html'],
@@ -10,16 +11,19 @@ const MENU_POR_PERFIL = {
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
   financeiro: [
+    ['inicio',     'Inicio',     'inicio.html'],
     ['compras',    'Compras',    'compras.html'],
     ['financeiro', 'Financeiro', 'financeiro.html'],
   ],
   estoque: [
+    ['inicio',        'Inicio',           'inicio.html'],
     ['ingredientes',  'Ingredientes',     'ingredientes.html'],
     ['produtos',      'Produtos',         'produtos.html'],
     ['compras',       'Compras',          'compras.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
   ],
   operador: [
+    ['inicio',        'Inicio',           'inicio.html'],
     ['pdv',           'PDV',              'pdv.html'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
