@@ -106,11 +106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   main.innerHTML = `
     ${header}
     <section class="inicio-cards-grid inicio-cols-auto">
-      <a href="dashboard.html" class="inicio-card">
-        <span class="inicio-card-icon">&#128202;</span>
-        <strong>Dashboard</strong>
-        <span>Indicadores gerais</span>
-      </a>
       <a href="pdv.html" class="inicio-card inicio-card-destaque">
         <span class="inicio-card-icon">&#9654;</span>
         <strong>PDV</strong>

@@ -567,7 +567,7 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
   padding: 0 24px 40px;
 }
 .inicio-cols-2   { grid-template-columns: repeat(2, 1fr); }
-.inicio-cols-auto { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.inicio-cols-auto { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 
 .inicio-card {
   display: flex;
