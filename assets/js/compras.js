@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td>${App.formatDate(item.data)}</td>
         <td>${App.escapeHtml(item.ingredientes?.nome || '-')}</td>
         <td>${App.escapeHtml(item.ingredientes?.unidade || '-')}</td>
-        <td>${Number(item.quantidade).toFixed(3)}</td>
+        <td>${parseFloat(Number(item.quantidade).toFixed(3))}</td>
         <td>${App.formatCurrency(item.valor_unitario)}</td>
         <td><strong>${App.formatCurrency(item.total)}</strong></td>
         ${isAdmin ? `<td><button class="btn btn-danger btn-sm" data-delete="${item.id}">Excluir</button></td>` : ''}

@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               return `<li>
                 <span class="badge ${s.className}">${App.escapeHtml(s.label)}</span>
                 <strong>${App.escapeHtml(i.nome)}</strong> —
-                ${Number(i.estoque_atual).toFixed(3)} ${App.escapeHtml(i.unidade)}
-                (min. ${Number(i.estoque_minimo).toFixed(3)})
+                ${parseFloat(Number(i.estoque_atual).toFixed(3))} ${App.escapeHtml(i.unidade)}
+                (min. ${parseFloat(Number(i.estoque_minimo).toFixed(3))})
               </li>`;
             }).join('')}
           </ul>

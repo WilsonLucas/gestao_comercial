@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <tr class="${status.status === 'critico' ? 'table-row-critical' : ''}">
           <td>${item.nome}</td>
           <td>${item.unidade}</td>
-          <td>${Number(item.estoque_atual).toFixed(3)}</td>
-          <td>${Number(item.estoque_minimo).toFixed(3)}</td>
+          <td>${parseFloat(Number(item.estoque_atual).toFixed(3))}</td>
+          <td>${parseFloat(Number(item.estoque_minimo).toFixed(3))}</td>
           <td>${App.formatCurrency(item.preco_compra)}</td>
           <td><span class="badge ${status.className}">${status.label}</span></td>
         </tr>
