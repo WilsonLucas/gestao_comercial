@@ -70,6 +70,9 @@ button, input, select { font: inherit; }
 }
 .sidebar-brand { margin-bottom: 28px; }
 .sidebar-brand h2 { margin: 8px 0 4px; font-size: 1.25rem; }
+.sidebar-nome { display: flex; flex-direction: column; line-height: 1.15; }
+.sidebar-nome-l1 { font-size: 0.95rem; font-weight: 500; color: #94a3b8; letter-spacing: 0.04em; text-transform: uppercase; }
+.sidebar-nome-l2 { font-size: 1.35rem; font-weight: 700; color: #f1f5f9; }
 .sidebar-nav { display: grid; gap: 8px; }
 .nav-link {
   display: flex;
@@ -166,7 +169,7 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 @media (max-width: 1024px) {
   .login-wrapper, .panel-grid.two-columns { grid-template-columns: 1fr; }
   .sidebar { width: 92px; padding: 20px 12px; }
-  .sidebar-brand p, .sidebar-brand h2, .nav-link span { display: none; }
+  .sidebar-brand p, .sidebar-brand h2, .sidebar-nome, .nav-link span { display: none; }
   .nav-link { justify-content: center; }
 }
 @media (max-width: 720px) {

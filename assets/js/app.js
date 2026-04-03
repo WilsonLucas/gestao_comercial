@@ -4,8 +4,8 @@ const MENU_POR_PERFIL = {
     ['dashboard',     'Dashboard',        'dashboard.html'],
     ['ingredientes',  'Ingredientes',     'ingredientes.html'],
     ['produtos',      'Produtos',         'produtos.html'],
-    ['compras',       'Compras',          'compras.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
+    ['compras',       'Compras',          'compras.html'],
     ['pdv',           'PDV',              'pdv.html'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
@@ -19,8 +19,8 @@ const MENU_POR_PERFIL = {
     ['inicio',        'Inicio',           'inicio.html'],
     ['ingredientes',  'Ingredientes',     'ingredientes.html'],
     ['produtos',      'Produtos',         'produtos.html'],
-    ['compras',       'Compras',          'compras.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
+    ['compras',       'Compras',          'compras.html'],
   ],
   operador: [
     ['inicio',        'Inicio',           'inicio.html'],
@@ -145,14 +145,15 @@ const App = (() => {
     const topbar = document.getElementById('topbar');
 
     if (sidebar) {
+      const nomeParts = APP_CONFIG.nome.split(' ');
+      const nomeL1 = escapeHtml(nomeParts[0] || APP_CONFIG.nome);
+      const nomeL2 = escapeHtml(nomeParts.slice(1).join(' '));
       const logoHtml = APP_CONFIG.logo
         ? `<img src="${escapeHtml(APP_CONFIG.logo)}" alt="${escapeHtml(APP_CONFIG.nome)}" style="max-height:${APP_CONFIG.logoAlturaSidebar}px; max-width:100%; object-fit:contain;">`
-        : `<h2>${escapeHtml(APP_CONFIG.nome)}</h2>`;
+        : `<div class="sidebar-nome"><span class="sidebar-nome-l1">${nomeL1}</span><span class="sidebar-nome-l2">${nomeL2}</span></div>`;
       sidebar.innerHTML = `
         <div class="sidebar-brand">
-          <span class="eyebrow">${escapeHtml(perfil)}</span>
           ${logoHtml}
-          <p>${escapeHtml(APP_CONFIG.slogan)}</p>
         </div>
         <nav class="sidebar-nav">
           ${menu.map(([key, label, href]) => `<a class="nav-link ${page === key ? 'active' : ''}" href="${escapeHtml(href)}"><span>${escapeHtml(label)}</span></a>`).join('')}
@@ -169,7 +170,6 @@ const App = (() => {
           <strong>${new Date().toLocaleDateString('pt-BR', { dateStyle: 'full' })}</strong>
         </div>
         <div class="topbar-user">
-          ${!isHome ? `<a class="btn btn-secondary" href="${escapeHtml(homePage)}" title="Voltar para o inicio">&#8962;</a>` : ''}
           <div>
             <strong>${escapeHtml(usuario.nome || 'Usuario')}</strong><br>
             <small>${escapeHtml(perfil)}</small>
