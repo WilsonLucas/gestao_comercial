@@ -20,55 +20,73 @@
           </div>
         </section>
 
-        <section class="panel-grid two-columns align-start">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Nova compra</h2>
-                <p>Preencha os dados para registrar a entrada no estoque.</p>
-              </div>
+        <!-- Formulario de nova compra (compacto, horizontal) -->
+        <article class="panel panel-compra-form">
+          <div class="panel-header">
+            <div>
+              <h2>Nova compra</h2>
+              <p>Preencha os dados e salve para atualizar o estoque automaticamente.</p>
             </div>
-            <form id="compra-form" class="form-grid">
-              <label><span>Ingrediente</span>
-                <select id="ingrediente-id" required>
-                  <option value="">Selecione o ingrediente</option>
-                </select>
-              </label>
-              <label><span>Valor unitario de compra</span><input type="number" id="valor-compra" step="0.01" min="0" required></label>
-              <label><span>Quantidade comprada</span><input type="number" id="quantidade-compra" min="0.001" step="0.001" required></label>
-              <label><span>Data da compra</span><input type="date" id="data-compra" required></label>
-              <label class="full-width"><span>Total da compra</span><input type="text" id="total-compra" readonly></label>
-              <div class="form-actions full-width">
-                <button class="btn btn-primary" type="submit">Salvar compra</button>
-              </div>
-            </form>
-          </article>
+          </div>
+          <form id="compra-form" class="form-compra">
+            <label class="compra-field-ingrediente">
+              <span>Ingrediente</span>
+              <select id="ingrediente-id" required>
+                <option value="">Selecione...</option>
+              </select>
+            </label>
+            <label>
+              <span>Quantidade <small id="unidade-hint" class="unit-hint"></small></span>
+              <input type="number" id="quantidade-compra" min="0.001" step="0.001" placeholder="0,000" required>
+            </label>
+            <label>
+              <span>Valor unitario (R$)</span>
+              <input type="number" id="valor-compra" step="0.01" min="0" placeholder="0,00" required>
+            </label>
+            <label>
+              <span>Data da compra</span>
+              <input type="date" id="data-compra" required>
+            </label>
+            <div class="compra-total-block">
+              <span class="compra-total-label">Total</span>
+              <span id="total-compra" class="compra-total-value">R$&nbsp;0,00</span>
+            </div>
+            <div class="compra-submit-block">
+              <button class="btn btn-primary" type="submit">Salvar compra</button>
+            </div>
+          </form>
+        </article>
 
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Historico de compras</h2>
-                <p>Remova registros quando necessario (apenas administrador).</p>
-              </div>
+        <!-- Historico de compras (largura total) -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Historico de compras</h2>
+              <p>Registro de todas as entradas no estoque.</p>
             </div>
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Ingrediente</th>
-                    <th>Unidade</th>
-                    <th>Qtd.</th>
-                    <th>Valor unit.</th>
-                    <th>Total</th>
-                    <th>Acoes</th>
-                  </tr>
-                </thead>
-                <tbody id="compras-body"></tbody>
-              </table>
+            <div class="toolbar">
+              <input type="text" id="filtro-compra-ingrediente" class="filter-input" placeholder="Buscar ingrediente..." style="max-width:220px;">
+              <input type="month" id="filtro-compra-mes" class="filter-input" style="max-width:160px;">
             </div>
-          </article>
-        </section>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Ingrediente</th>
+                  <th>Unidade</th>
+                  <th>Qtd.</th>
+                  <th>Valor unit.</th>
+                  <th>Total</th>
+                  <th id="th-acoes" style="display:none;">Acoes</th>
+                </tr>
+              </thead>
+              <tbody id="compras-body"></tbody>
+            </table>
+          </div>
+          <p id="compras-total-periodo" class="compras-total-periodo"></p>
+        </article>
       </main>
     </div>
   </div>
