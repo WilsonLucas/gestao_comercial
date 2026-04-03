@@ -10,17 +10,13 @@ const MENU_POR_PERFIL = {
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
-  financeiro: [
-    ['inicio',     'Inicio',     'inicio.html'],
-    ['compras',    'Compras',    'compras.html'],
-    ['financeiro', 'Financeiro', 'financeiro.html'],
-  ],
-  estoque: [
+  gerente: [
     ['inicio',        'Inicio',           'inicio.html'],
     ['ingredientes',  'Ingredientes',     'ingredientes.html'],
     ['produtos',      'Produtos',         'produtos.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
     ['compras',       'Compras',          'compras.html'],
+    ['financeiro',    'Financeiro',       'financeiro.html'],
   ],
   operador: [
     ['inicio',        'Inicio',           'inicio.html'],

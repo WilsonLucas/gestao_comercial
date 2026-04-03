@@ -36,26 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  if (perfil === 'financeiro') {
-    main.innerHTML = `
-      ${header}
-      <section class="inicio-cards-grid inicio-cols-2">
-        <a href="compras.html" class="inicio-card">
-          <span class="inicio-card-icon">&#128722;</span>
-          <strong>Compras</strong>
-          <span>Registrar e consultar compras</span>
-        </a>
-        <a href="financeiro.html" class="inicio-card">
-          <span class="inicio-card-icon">&#128200;</span>
-          <strong>Financeiro</strong>
-          <span>Indicadores e relatorios</span>
-        </a>
-      </section>
-    `;
-    return;
-  }
-
-  if (perfil === 'estoque') {
+  if (perfil === 'gerente') {
     // Buscar ingredientes com estoque critico ou em atencao
     const { data: alertas } = await db
       .from('ingredientes')
@@ -89,16 +70,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     main.innerHTML = `
       ${header}
-      <section class="inicio-cards-grid inicio-cols-2">
+      <section class="inicio-cards-grid inicio-cols-auto">
         <a href="ingredientes.html" class="inicio-card">
           <span class="inicio-card-icon">&#127811;</span>
           <strong>Ingredientes</strong>
           <span>Consultar e ajustar estoque</span>
         </a>
+        <a href="produtos.html" class="inicio-card">
+          <span class="inicio-card-icon">&#127859;</span>
+          <strong>Produtos</strong>
+          <span>Cardapio e fichas tecnicas</span>
+        </a>
         <a href="lista-compras.html" class="inicio-card">
           <span class="inicio-card-icon">&#128203;</span>
           <strong>Lista de Compras</strong>
           <span>Ver o que precisa repor</span>
+        </a>
+        <a href="compras.html" class="inicio-card">
+          <span class="inicio-card-icon">&#128722;</span>
+          <strong>Compras</strong>
+          <span>Registrar entradas no estoque</span>
+        </a>
+        <a href="financeiro.html" class="inicio-card">
+          <span class="inicio-card-icon">&#128200;</span>
+          <strong>Financeiro</strong>
+          <span>Indicadores e resultados</span>
         </a>
       </section>
       ${alertasHtml}

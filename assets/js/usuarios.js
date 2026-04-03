@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   if (document.body.dataset.page !== 'usuarios') return;
 
-  const EMAILS_PROTEGIDOS = ['admin@admin.com', 'financeiro@admin.com', 'estoque@admin.com', 'operador@admin.com'];
+  const EMAILS_PROTEGIDOS = ['admin@admin.com', 'gerente@admin.com', 'operador@admin.com'];
   const form = document.getElementById('usuario-form');
   const idInput = document.getElementById('usuario-id');
 
