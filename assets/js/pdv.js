@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mins = ficha.map((f) => {
       const estoque = Number(f.ingredientes?.estoque_atual ?? 0);
       const qtd = Number(f.quantidade);
-      return qtd > 0 ? Math.floor(estoque / qtd) : Infinity;
+      // parseFloat+toFixed corrige imprecisao de ponto flutuante
+      // ex: 0.400 / 0.080 = 4.9999... → toFixed(6) → 5.000000 → floor = 5
+      return qtd > 0 ? Math.floor(parseFloat((estoque / qtd).toFixed(6))) : Infinity;
     });
     return Math.min(...mins);
   }
