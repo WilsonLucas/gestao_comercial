@@ -15,6 +15,10 @@
       </div>
       <div class="cozinha-topbar-centro">
         <span class="cozinha-relogio" id="cozinha-relogio">00:00:00</span>
+        <div class="cozinha-tabs">
+          <button class="cozinha-tab ativo" id="tab-fila" type="button">Fila (<span id="tab-fila-count">0</span>)</button>
+          <button class="cozinha-tab" id="tab-entregues" type="button">Entregues (<span id="tab-entregues-count">0</span>)</button>
+        </div>
       </div>
       <div class="cozinha-topbar-direita">
         <span class="cozinha-contador" id="cozinha-contador">0 pedidos</span>
@@ -22,6 +26,7 @@
       </div>
     </header>
     <div class="cozinha-grid" id="cozinha-grid"></div>
+    <div class="cozinha-grid" id="cozinha-grid-entregues" style="display:none"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
