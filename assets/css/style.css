@@ -218,11 +218,11 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 
 /* Badge de categoria */
 .categoria-badge { color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.03em; background: var(--primary); }
-.categoria-pastis-salgados  { background: #e05c1a; }
-.categoria-pastis-doces     { background: #b845a8; }
-.categoria-porcoes          { background: #2a7d4f; }
-.categoria-misto-quente     { background: #c4870a; }
-.categoria-bebidas          { background: #1a6bbf; }
+.badge.categoria-pastis-salgados { background: #e05c1a; color: #fff; }
+.badge.categoria-pastis-doces    { background: #b845a8; color: #fff; }
+.badge.categoria-porcoes         { background: #2a7d4f; color: #fff; }
+.badge.categoria-misto-quente    { background: #c4870a; color: #fff; }
+.badge.categoria-bebidas         { background: #1a6bbf; color: #fff; }
 
 /* Modal de confirmacao (App.confirmar) */
 .confirm-overlay {
