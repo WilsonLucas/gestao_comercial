@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   let produtosCache = [];
   let categoriaAtiva = '';
 
-  // ── Carregar produtos com ficha tecnica para calcular disponibilidade ─
+  // ── Carregar produtos com ficha tecnica ───────────────────────────
   async function carregarProdutos() {
     const { data } = await db
       .from('produtos')
-      .select('id, nome, preco_venda, categoria, ficha_tecnica(quantidade, ingredientes(estoque_atual))')
+      .select('id, nome, preco_venda, categoria, ficha_tecnica(quantidade, ingredientes(nome, unidade, estoque_atual))')
       .eq('ativo', true)
       .order('categoria')
       .order('nome');
@@ -19,27 +19,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     }));
   }
 
-  // Calcula quantas unidades do produto podem ser feitas com o estoque atual
   function calcularDisponivel(produto) {
     const ficha = produto.ficha_tecnica || [];
-    if (!ficha.length) return null; // sem ficha: sem restricao de estoque
+    if (!ficha.length) return null;
     const mins = ficha.map((f) => {
-      const estoque = Number(f.ingredientes?.estoque_atual ?? 0);
+      if (!f.ingredientes) return Infinity;
+      const estoque = Number(f.ingredientes.estoque_atual ?? 0);
       const qtd = Number(f.quantidade);
-      // parseFloat+toFixed corrige imprecisao de ponto flutuante
-      // ex: 0.400 / 0.080 = 4.9999... → toFixed(6) → 5.000000 → floor = 5
       return qtd > 0 ? Math.floor(parseFloat((estoque / qtd).toFixed(6))) : Infinity;
     });
     return Math.min(...mins);
   }
 
+  // ── Popup de ingredientes ─────────────────────────────────────────
+  const popup = document.getElementById('pdv-ingredientes-popup');
+  const popupLista = document.getElementById('pdv-popup-lista');
+  const popupTitulo = document.getElementById('pdv-popup-titulo');
+
+  function fecharPopup() {
+    if (popup) popup.style.display = 'none';
+  }
+
+  function abrirPopup(produto) {
+    if (!popup || !popupLista || !popupTitulo) return;
+    const ficha = produto.ficha_tecnica || [];
+
+    popupTitulo.textContent = produto.nome;
+    popupLista.innerHTML = ficha.length
+      ? ficha.map((f) => `
+          <li>
+            <span>${App.escapeHtml(f.ingredientes?.nome || '—')}</span>
+            <span class="pdv-popup-qtd">${parseFloat(Number(f.quantidade).toFixed(3))} ${App.escapeHtml(f.ingredientes?.unidade || '')}</span>
+          </li>
+        `).join('')
+      : '<li class="pdv-popup-vazia">Sem ficha tecnica cadastrada.</li>';
+
+    popup.style.display = 'flex';
+  }
+
+  popup?.addEventListener('click', (e) => {
+    if (e.target === popup) fecharPopup();
+  });
+  document.getElementById('pdv-popup-fechar')?.addEventListener('click', fecharPopup);
+
   // ── Categorias ────────────────────────────────────────────────────
   function renderCategorias() {
     const nav = document.getElementById('pdv-categorias');
     if (!nav) return;
-
     const cats = ['Todos', ...new Set(produtosCache.map((p) => p.categoria).filter(Boolean))];
-
     nav.innerHTML = cats.map((cat) => `
       <button
         class="pdv-cat-btn ${(cat === 'Todos' ? categoriaAtiva === '' : categoriaAtiva === cat) ? 'active' : ''}"
@@ -66,14 +93,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     grid.innerHTML = filtrado.map((p) => {
       const esgotado = p.disponivel !== null && p.disponivel === 0;
       const poucoEstoque = p.disponivel !== null && p.disponivel > 0 && p.disponivel <= 5;
+      const temFicha = (p.ficha_tecnica || []).length > 0;
       return `
-        <button class="pdv-card ${esgotado ? 'pdv-card-esgotado' : ''}"
-          data-id="${p.id}" type="button" ${esgotado ? 'disabled' : ''}>
-          ${poucoEstoque ? `<span class="pdv-badge-pouco">Pouco estoque</span>` : ''}
-          ${esgotado ? `<span class="pdv-badge-esgotado">Indisponivel</span>` : ''}
-          <span class="pdv-card-nome">${App.escapeHtml(p.nome)}</span>
-          <span class="pdv-card-preco">${App.formatCurrency(p.preco_venda)}</span>
-        </button>
+        <div class="pdv-card-wrap">
+          <button class="pdv-card ${esgotado ? 'pdv-card-esgotado' : ''}"
+            data-id="${p.id}" type="button" ${esgotado ? 'disabled' : ''}>
+            ${poucoEstoque ? `<span class="pdv-badge-pouco">Pouco estoque</span>` : ''}
+            ${esgotado     ? `<span class="pdv-badge-esgotado">Indisponivel</span>` : ''}
+            <span class="pdv-card-nome">${App.escapeHtml(p.nome)}</span>
+            <span class="pdv-card-preco">${App.formatCurrency(p.preco_venda)}</span>
+          </button>
+          ${temFicha ? `<button class="pdv-info-btn" data-info="${p.id}" type="button" title="Ver ingredientes">&#9432;</button>` : ''}
+        </div>
       `;
     }).join('');
   }
@@ -92,14 +123,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     container.innerHTML = carrinho.map((item, idx) => `
       <div class="pdv-cart-item">
-        <div class="pdv-cart-item-nome">${App.escapeHtml(item.nome)}</div>
-        <div class="pdv-cart-item-controles">
-          <button class="pdv-qty-btn" data-dec="${idx}" type="button">&#8722;</button>
-          <span class="pdv-qty-valor">${item.quantidade}</span>
-          <button class="pdv-qty-btn" data-inc="${idx}" type="button">&#43;</button>
+        <div class="pdv-cart-item-top">
+          <span class="pdv-cart-item-nome">${App.escapeHtml(item.nome)}</span>
+          <button class="pdv-cart-remove" data-remove="${idx}" type="button">&times;</button>
         </div>
-        <div class="pdv-cart-item-preco">${App.formatCurrency(item.preco_venda * item.quantidade)}</div>
-        <button class="pdv-cart-remove" data-remove="${idx}" type="button">&times;</button>
+        <div class="pdv-cart-item-bottom">
+          <div class="pdv-cart-item-controles">
+            <button class="pdv-qty-btn" data-dec="${idx}" type="button">&#8722;</button>
+            <span class="pdv-qty-valor">${item.quantidade}</span>
+            <button class="pdv-qty-btn" data-inc="${idx}" type="button">&#43;</button>
+          </div>
+          <span class="pdv-cart-item-preco">${App.formatCurrency(item.preco_venda * item.quantidade)}</span>
+        </div>
+        <input
+          class="pdv-obs-input"
+          type="text"
+          placeholder="Observacao (ex: sem queijo)"
+          maxlength="120"
+          data-obs="${idx}"
+          value="${App.escapeHtml(item.observacao || '')}">
       </div>
     `).join('');
 
@@ -114,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (existente) {
       existente.quantidade += 1;
     } else {
-      carrinho.push({ produto_id: produto.id, nome: produto.nome, preco_venda: Number(produto.preco_venda), quantidade: 1 });
+      carrinho.push({ produto_id: produto.id, nome: produto.nome, preco_venda: Number(produto.preco_venda), quantidade: 1, observacao: '' });
     }
     renderCarrinho();
   }
@@ -128,37 +170,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderProdutos();
   });
 
-  // ── Eventos: adicionar produto ao clicar no card ──────────────────
+  // ── Eventos: cards de produto ─────────────────────────────────────
   document.getElementById('pdv-produtos-grid')?.addEventListener('click', (e) => {
-    const card = e.target.closest('.pdv-card');
-    if (!card) return;
-    adicionarAoCarrinho(card.dataset.id);
+    // Botao de info (ingredientes)
+    const infoBtn = e.target.closest('.pdv-info-btn');
+    if (infoBtn) {
+      const produto = produtosCache.find((p) => p.id === infoBtn.dataset.info);
+      if (produto) abrirPopup(produto);
+      return;
+    }
 
-    // Feedback visual rapido
+    // Card de produto (adicionar ao carrinho)
+    const card = e.target.closest('.pdv-card');
+    if (!card || card.disabled) return;
+    adicionarAoCarrinho(card.dataset.id);
     card.classList.add('pdv-card-added');
     setTimeout(() => card.classList.remove('pdv-card-added'), 300);
   });
 
-  // ── Eventos: controles do carrinho ────────────────────────────────
+  // ── Eventos: carrinho ─────────────────────────────────────────────
   document.getElementById('pdv-carrinho-itens')?.addEventListener('click', (e) => {
     const inc = e.target.dataset.inc;
     const dec = e.target.dataset.dec;
     const rem = e.target.dataset.remove;
 
-    if (inc != null) {
-      carrinho[Number(inc)].quantidade += 1;
-      renderCarrinho();
-    }
+    if (inc != null) { carrinho[Number(inc)].quantidade += 1; renderCarrinho(); }
     if (dec != null) {
       const idx = Number(dec);
       carrinho[idx].quantidade -= 1;
       if (carrinho[idx].quantidade <= 0) carrinho.splice(idx, 1);
       renderCarrinho();
     }
-    if (rem != null) {
-      carrinho.splice(Number(rem), 1);
-      renderCarrinho();
-    }
+    if (rem != null) { carrinho.splice(Number(rem), 1); renderCarrinho(); }
+  });
+
+  // Observacao por item
+  document.getElementById('pdv-carrinho-itens')?.addEventListener('input', (e) => {
+    const idx = e.target.dataset.obs;
+    if (idx != null) carrinho[Number(idx)].observacao = e.target.value;
   });
 
   // ── Limpar carrinho ───────────────────────────────────────────────
@@ -181,7 +230,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!confirmado) return;
 
     const user = App.getUsuario();
-    const itens = carrinho.map((i) => ({ produto_id: i.produto_id, quantidade: i.quantidade }));
+    const itens = carrinho.map((i) => ({
+      produto_id: i.produto_id,
+      quantidade: i.quantidade,
+      observacao: i.observacao || null,
+    }));
 
     App.setLoading(btnFinalizar, true);
     try {
