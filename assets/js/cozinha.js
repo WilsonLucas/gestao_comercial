@@ -154,7 +154,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (error) {
       const g = document.getElementById('cozinha-grid');
-      if (g) g.innerHTML = '<div class="cozinha-vazio">Erro ao carregar pedidos.</div>';
+      if (g) {
+        const migrationMsg = error.message && error.message.includes('does not exist')
+          ? 'Execute a migration <strong>006_status_vendas.sql</strong> no Supabase SQL Editor para ativar esta página.'
+          : `Erro ao carregar pedidos: ${error.message}`;
+        g.innerHTML = `<div class="cozinha-vazio" style="max-width:480px;line-height:1.6">${migrationMsg}</div>`;
+      }
       return;
     }
 

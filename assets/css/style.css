@@ -627,6 +627,7 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 }
 .inicio-pdv-icon { font-size: 3rem; }
 .inicio-link-secundario { font-size: 0.9rem; }
+.inicio-operador-secundarios { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
 /* Alerta de estoque */
 .inicio-alerta-estoque {

@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="inicio-pdv-icon">&#9654;</span>
           Abrir PDV
         </a>
-        <a href="historico-dia.html" class="btn btn-secondary inicio-link-secundario">Ver historico do dia</a>
+        <div class="inicio-operador-secundarios">
+          <a href="cozinha.html" class="btn btn-primary inicio-link-secundario">&#127859; Cozinha</a>
+          <a href="historico-dia.html" class="btn btn-secondary inicio-link-secundario">Ver historico do dia</a>
+        </div>
       </section>
     `;
     return;
