@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     grid.innerHTML = filtrado.map((p) => {
       const esgotado = p.disponivel !== null && p.disponivel === 0;
       const poucoEstoque = p.disponivel !== null && p.disponivel > 0 && p.disponivel <= 5;
-      const temFicha = (p.ficha_tecnica || []).length > 0;
+      const temFicha = (p.ficha_tecnica || []).length > 1;
       return `
         <div class="pdv-card-wrap">
           <button class="pdv-card ${esgotado ? 'pdv-card-esgotado' : ''}"
