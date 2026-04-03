@@ -3,92 +3,161 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let carrinho = [];
   let produtosCache = [];
+  let categoriaAtiva = '';
 
+  // ── Carregar produtos ─────────────────────────────────────────────
   async function carregarProdutos() {
-    const { data } = await db.from('produtos').select('id, nome, preco_venda').eq('ativo', true).order('nome');
+    const { data } = await db
+      .from('produtos')
+      .select('id, nome, preco_venda, categoria')
+      .eq('ativo', true)
+      .order('categoria')
+      .order('nome');
     produtosCache = data || [];
-    const select = document.getElementById('pdv-produto');
-    if (select) {
-      select.innerHTML = '<option value="">Selecione um produto</option>' +
-        produtosCache.map((p) => `<option value="${p.id}">${App.escapeHtml(p.nome)} - ${App.formatCurrency(p.preco_venda)}</option>`).join('');
-    }
   }
 
-  function renderCarrinho() {
-    const tbody = document.getElementById('carrinho-body');
-    const totalEl = document.getElementById('carrinho-total');
-    if (!tbody) return;
+  // ── Categorias ────────────────────────────────────────────────────
+  function renderCategorias() {
+    const nav = document.getElementById('pdv-categorias');
+    if (!nav) return;
 
-    if (carrinho.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Carrinho vazio.</td></tr>';
-      if (totalEl) totalEl.textContent = App.formatCurrency(0);
+    const cats = ['Todos', ...new Set(produtosCache.map((p) => p.categoria).filter(Boolean))];
+
+    nav.innerHTML = cats.map((cat) => `
+      <button
+        class="pdv-cat-btn ${(cat === 'Todos' ? categoriaAtiva === '' : categoriaAtiva === cat) ? 'active' : ''}"
+        data-cat="${cat === 'Todos' ? '' : App.escapeHtml(cat)}">
+        ${App.escapeHtml(cat)}
+      </button>
+    `).join('');
+  }
+
+  // ── Grade de produtos ─────────────────────────────────────────────
+  function renderProdutos() {
+    const grid = document.getElementById('pdv-produtos-grid');
+    if (!grid) return;
+
+    const filtrado = categoriaAtiva
+      ? produtosCache.filter((p) => p.categoria === categoriaAtiva)
+      : produtosCache;
+
+    if (!filtrado.length) {
+      grid.innerHTML = '<p class="empty-state" style="grid-column:1/-1">Nenhum produto nesta categoria.</p>';
       return;
     }
 
-    tbody.innerHTML = carrinho.map((item, idx) => `
-      <tr>
-        <td>${App.escapeHtml(item.nome)}</td>
-        <td>${item.quantidade}</td>
-        <td>${App.formatCurrency(item.preco_venda)}</td>
-        <td>
-          <button class="btn btn-danger btn-sm" data-remove="${idx}">Remover</button>
-        </td>
-      </tr>
+    grid.innerHTML = filtrado.map((p) => `
+      <button class="pdv-card" data-id="${p.id}" type="button">
+        <span class="pdv-card-nome">${App.escapeHtml(p.nome)}</span>
+        <span class="pdv-card-preco">${App.formatCurrency(p.preco_venda)}</span>
+      </button>
+    `).join('');
+  }
+
+  // ── Carrinho ──────────────────────────────────────────────────────
+  function renderCarrinho() {
+    const container = document.getElementById('pdv-carrinho-itens');
+    const totalEl = document.getElementById('carrinho-total');
+    if (!container) return;
+
+    if (!carrinho.length) {
+      container.innerHTML = '<p class="pdv-carrinho-vazio">Nenhum item adicionado.</p>';
+      if (totalEl) totalEl.textContent = 'R$\u00a00,00';
+      return;
+    }
+
+    container.innerHTML = carrinho.map((item, idx) => `
+      <div class="pdv-cart-item">
+        <div class="pdv-cart-item-nome">${App.escapeHtml(item.nome)}</div>
+        <div class="pdv-cart-item-controles">
+          <button class="pdv-qty-btn" data-dec="${idx}" type="button">&#8722;</button>
+          <span class="pdv-qty-valor">${item.quantidade}</span>
+          <button class="pdv-qty-btn" data-inc="${idx}" type="button">&#43;</button>
+        </div>
+        <div class="pdv-cart-item-preco">${App.formatCurrency(item.preco_venda * item.quantidade)}</div>
+        <button class="pdv-cart-remove" data-remove="${idx}" type="button">&times;</button>
+      </div>
     `).join('');
 
-    const total = carrinho.reduce((sum, item) => sum + (item.preco_venda * item.quantidade), 0);
+    const total = carrinho.reduce((s, i) => s + i.preco_venda * i.quantidade, 0);
     if (totalEl) totalEl.textContent = App.formatCurrency(total);
   }
 
-  document.getElementById('pdv-adicionar')?.addEventListener('click', () => {
-    const select = document.getElementById('pdv-produto');
-    const qtdInput = document.getElementById('pdv-quantidade');
-    const produtoId = select?.value;
-    const quantidade = Number(qtdInput?.value) || 1;
-
-    if (!produtoId) { App.showToast('Selecione um produto.', 'error'); return; }
-
+  function adicionarAoCarrinho(produtoId) {
     const produto = produtosCache.find((p) => p.id === produtoId);
     if (!produto) return;
-
-    const existente = carrinho.find((item) => item.produto_id === produtoId);
+    const existente = carrinho.find((i) => i.produto_id === produtoId);
     if (existente) {
-      existente.quantidade += quantidade;
+      existente.quantidade += 1;
     } else {
-      carrinho.push({ produto_id: produto.id, nome: produto.nome, preco_venda: Number(produto.preco_venda), quantidade });
+      carrinho.push({ produto_id: produto.id, nome: produto.nome, preco_venda: Number(produto.preco_venda), quantidade: 1 });
     }
-
-    if (select) select.value = '';
-    if (qtdInput) qtdInput.value = 1;
     renderCarrinho();
+  }
+
+  // ── Eventos: categorias ───────────────────────────────────────────
+  document.getElementById('pdv-categorias')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.pdv-cat-btn');
+    if (!btn) return;
+    categoriaAtiva = btn.dataset.cat;
+    renderCategorias();
+    renderProdutos();
   });
 
-  document.getElementById('carrinho-body')?.addEventListener('click', (event) => {
-    const removeIdx = event.target.dataset.remove;
-    if (removeIdx != null) {
-      carrinho.splice(Number(removeIdx), 1);
+  // ── Eventos: adicionar produto ao clicar no card ──────────────────
+  document.getElementById('pdv-produtos-grid')?.addEventListener('click', (e) => {
+    const card = e.target.closest('.pdv-card');
+    if (!card) return;
+    adicionarAoCarrinho(card.dataset.id);
+
+    // Feedback visual rapido
+    card.classList.add('pdv-card-added');
+    setTimeout(() => card.classList.remove('pdv-card-added'), 300);
+  });
+
+  // ── Eventos: controles do carrinho ────────────────────────────────
+  document.getElementById('pdv-carrinho-itens')?.addEventListener('click', (e) => {
+    const inc = e.target.dataset.inc;
+    const dec = e.target.dataset.dec;
+    const rem = e.target.dataset.remove;
+
+    if (inc != null) {
+      carrinho[Number(inc)].quantidade += 1;
+      renderCarrinho();
+    }
+    if (dec != null) {
+      const idx = Number(dec);
+      carrinho[idx].quantidade -= 1;
+      if (carrinho[idx].quantidade <= 0) carrinho.splice(idx, 1);
+      renderCarrinho();
+    }
+    if (rem != null) {
+      carrinho.splice(Number(rem), 1);
       renderCarrinho();
     }
   });
 
+  // ── Limpar carrinho ───────────────────────────────────────────────
   document.getElementById('pdv-limpar')?.addEventListener('click', () => {
     carrinho = [];
     renderCarrinho();
   });
 
+  // ── Finalizar venda ───────────────────────────────────────────────
   const btnFinalizar = document.getElementById('pdv-finalizar');
 
   btnFinalizar?.addEventListener('click', async () => {
-    if (carrinho.length === 0) {
+    if (!carrinho.length) {
       App.showToast('Adicione itens ao carrinho antes de finalizar.', 'error');
       return;
     }
 
-    const confirmado = await App.confirmar(`Confirmar venda com ${carrinho.length} item(s)?`);
+    const total = carrinho.reduce((s, i) => s + i.preco_venda * i.quantidade, 0);
+    const confirmado = await App.confirmar(`Confirmar venda de ${carrinho.length} item(s) — ${App.formatCurrency(total)}?`);
     if (!confirmado) return;
 
     const user = App.getUsuario();
-    const itens = carrinho.map((item) => ({ produto_id: item.produto_id, quantidade: item.quantidade }));
+    const itens = carrinho.map((i) => ({ produto_id: i.produto_id, quantidade: i.quantidade }));
 
     App.setLoading(btnFinalizar, true);
     try {
@@ -109,6 +178,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ── Init ──────────────────────────────────────────────────────────
   await carregarProdutos();
+  renderCategorias();
+  renderProdutos();
   renderCarrinho();
 });

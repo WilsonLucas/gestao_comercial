@@ -9,70 +9,45 @@
 <body data-page="pdv">
   <div class="app-shell">
     <aside class="sidebar" id="sidebar"></aside>
-    <div class="content-area">
+    <div class="content-area pdv-content-area">
       <header class="topbar" id="topbar"></header>
-      <main class="page-content">
-        <section class="page-heading">
-          <div>
-            <span class="eyebrow">Caixa</span>
-            <h1>PDV - Ponto de Venda</h1>
-            <p>Adicione produtos ao carrinho e finalize a venda.</p>
+
+      <!-- Layout totem: categorias | produtos | carrinho -->
+      <div class="pdv-layout">
+
+        <!-- Coluna 1: Categorias -->
+        <nav class="pdv-categorias" id="pdv-categorias">
+          <!-- preenchido via JS -->
+        </nav>
+
+        <!-- Coluna 2: Produtos -->
+        <section class="pdv-produtos-area">
+          <div class="pdv-produtos-grid" id="pdv-produtos-grid">
+            <!-- preenchido via JS -->
           </div>
         </section>
 
-        <section class="panel-grid two-columns align-start">
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Adicionar produto</h2>
-                <p>Selecione o produto e a quantidade.</p>
-              </div>
-            </div>
-            <div class="form-grid">
-              <label><span>Produto</span>
-                <select id="pdv-produto">
-                  <option value="">Selecione um produto</option>
-                </select>
-              </label>
-              <label><span>Quantidade</span>
-                <input type="number" id="pdv-quantidade" value="1" min="1" step="1">
-              </label>
-              <div class="form-actions full-width">
-                <button class="btn btn-primary" id="pdv-adicionar" type="button">Adicionar ao carrinho</button>
-              </div>
-            </div>
-          </article>
+        <!-- Coluna 3: Carrinho -->
+        <aside class="pdv-carrinho-panel">
+          <div class="pdv-carrinho-header">
+            <h2>Carrinho</h2>
+            <button class="btn btn-secondary btn-sm" id="pdv-limpar">Limpar</button>
+          </div>
 
-          <article class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Carrinho</h2>
-                <p>Itens adicionados para esta venda.</p>
-              </div>
+          <div class="pdv-carrinho-itens" id="pdv-carrinho-itens">
+            <p class="pdv-carrinho-vazio">Nenhum item adicionado.</p>
+          </div>
+
+          <div class="pdv-carrinho-footer">
+            <div class="pdv-total-linha">
+              <span>Total</span>
+              <strong id="carrinho-total">R$&nbsp;0,00</strong>
             </div>
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Produto</th>
-                    <th>Qtd.</th>
-                    <th>Preco unit.</th>
-                    <th>Acao</th>
-                  </tr>
-                </thead>
-                <tbody id="carrinho-body"></tbody>
-              </table>
-            </div>
-            <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
-              <strong>Total: <span id="carrinho-total">R$ 0,00</span></strong>
-              <div class="actions">
-                <button class="btn btn-secondary" id="pdv-limpar" type="button">Limpar</button>
-                <button class="btn btn-primary" id="pdv-finalizar" type="button">Finalizar venda</button>
-              </div>
-            </div>
-          </article>
-        </section>
-      </main>
+            <button class="btn btn-primary btn-block" id="pdv-finalizar">Finalizar venda</button>
+          </div>
+        </aside>
+
+      </div>
     </div>
   </div>
 
