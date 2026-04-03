@@ -5,8 +5,8 @@ node_modules/
 .env
 .env.local
 
-# Memoria interna dos agentes (uso exclusivo dos devs)
-.claude/projects/
+# Pasta interna do Claude Code (SDD, configs locais — nao expor em repos publicos)
+.claude/
 
 # Supabase client com credenciais reais (nao commitar se repo for publico)
 # assets/js/supabase-client.js
