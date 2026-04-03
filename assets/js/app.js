@@ -6,6 +6,7 @@ const MENU_POR_PERFIL = {
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
     ['compras',       'Compras',          'compras.html'],
     ['vendas',        'Vendas',           'vendas.html'],
+    ['cozinha',       'Cozinha',          'cozinha.html'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
@@ -20,6 +21,7 @@ const MENU_POR_PERFIL = {
   operador: [
     ['inicio',        'Inicio',           'inicio.html'],
     ['vendas',        'Vendas',           'vendas.html'],
+    ['cozinha',       'Cozinha',          'cozinha.html'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
 };
@@ -127,6 +129,7 @@ const App = (() => {
   function renderAppShell() {
     const page = document.body.dataset.page;
     if (page === 'login') return;
+    if (page === 'cozinha') return;
 
     const usuario = getUsuario();
     if (!usuario) {

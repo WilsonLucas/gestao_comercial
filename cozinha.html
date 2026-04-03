@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozinha | Sistema de Gestao Comercial</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="cozinha">
+  <div class="cozinha-shell">
+    <header class="cozinha-topbar">
+      <div class="cozinha-topbar-esquerda">
+        <span class="cozinha-title" id="cozinha-titulo">Cozinha</span>
+        <span class="cozinha-estabelecimento" id="cozinha-estabelecimento"></span>
+      </div>
+      <div class="cozinha-topbar-centro">
+        <span class="cozinha-relogio" id="cozinha-relogio">00:00:00</span>
+      </div>
+      <div class="cozinha-topbar-direita">
+        <span class="cozinha-contador" id="cozinha-contador">0 pedidos</span>
+        <button class="btn btn-secondary" id="cozinha-sair" type="button">Sair</button>
+      </div>
+    </header>
+    <div class="cozinha-grid" id="cozinha-grid"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/cozinha.js"></script>
+</body>
+</html>

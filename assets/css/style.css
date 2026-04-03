@@ -662,4 +662,176 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 }
 .confirm-dialog p { margin: 0 0 20px; font-size: 15px; line-height: 1.5; color: var(--text); }
 .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ── Cozinha ─────────────────────────────────────────────────────────────── */
+.cozinha-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+}
+.cozinha-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(31,41,55,0.10);
+  z-index: 100;
+}
+.cozinha-topbar-esquerda {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.cozinha-topbar-centro {
+  display: flex;
+  align-items: center;
+}
+.cozinha-topbar-direita {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cozinha-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.cozinha-estabelecimento {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.cozinha-relogio {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--primary);
+}
+.cozinha-contador {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.cozinha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 80px 16px 16px;
+}
+.cozinha-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border-left: 4px solid transparent;
+  transition: border-color 0.3s;
+  animation: fadeIn 0.3s ease;
+}
+.cozinha-card.novo {
+  border-left-color: var(--primary);
+}
+.cozinha-card.urgente {
+  border-left-color: var(--danger);
+}
+.cozinha-card-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cozinha-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cozinha-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.cozinha-badge-novo {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  font-weight: 600;
+}
+.cozinha-tempo {
+  font-size: 0.9rem;
+}
+.cozinha-tempo.normal {
+  color: var(--muted);
+}
+.cozinha-tempo.atencao {
+  color: var(--warning);
+}
+.cozinha-tempo.urgente {
+  color: var(--danger);
+}
+.cozinha-card-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+}
+.cozinha-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cozinha-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+.cozinha-item:last-child {
+  border-bottom: none;
+}
+.cozinha-item-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cozinha-qtd {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cozinha-obs {
+  font-size: 0.82rem;
+  color: var(--warning);
+  padding-left: 38px;
+}
+.cozinha-vazio {
+  text-align: center;
+  color: var(--muted);
+  padding: 60px 20px;
+  font-size: 1rem;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@media (max-width: 768px) {
+  .cozinha-grid {
+    grid-template-columns: 1fr;
+  }
+  .cozinha-num {
+    font-size: 1.3rem;
+  }
+}
 .confirm-actions .btn { min-width: 110px; }
