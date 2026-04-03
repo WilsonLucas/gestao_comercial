@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Renderização das linhas ────────────────────────────────────
   function renderRows(lista) {
     const tbody = document.getElementById('produtos-body');
-    const colspan = 6;
+    const colspan = 5;
 
     if (!lista.length) {
       tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state">Nenhum produto encontrado.</td></tr>`;
@@ -50,6 +50,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const ficha = item.ficha_tecnica || [];
       const custo = ficha.reduce((acc, f) => acc + (Number(f.ingredientes?.preco_compra || 0) * Number(f.quantidade)), 0);
       const margem = item.preco_venda > 0 ? ((item.preco_venda - custo) / item.preco_venda * 100).toFixed(1) : 0;
+      const CATEGORIA_COR = {
+        'Pastéis Salgados': 'categoria-pastis-salgados',
+        'Pastéis Doces':    'categoria-pastis-doces',
+        'Porções':          'categoria-porcoes',
+        'Misto Quente':     'categoria-misto-quente',
+        'Bebidas':          'categoria-bebidas',
+      };
+      const categoriaSlug = CATEGORIA_COR[item.categoria] || '';
 
       const fichaRows = ficha.map((f) => {
         const custoItem = Number(f.ingredientes?.preco_compra || 0) * Number(f.quantidade);
@@ -67,9 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return `
         <tr>
           <td>${App.escapeHtml(item.nome)}</td>
-          <td><span class="badge categoria-badge">${App.escapeHtml(item.categoria || '—')}</span></td>
+          <td><span class="badge categoria-badge categoria-${categoriaSlug}">${App.escapeHtml(item.categoria || '—')}</span></td>
           <td>${App.formatCurrency(item.preco_venda)}</td>
-          <td>${ficha.length} ingrediente(s)</td>
           <td><span class="badge ${item.ativo ? 'normal' : 'danger'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
           <td>
             <div class="actions">
