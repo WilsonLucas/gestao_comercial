@@ -3,22 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Sistema de Gestao Comercial</title>
+  <title>Login</title>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="login-body" data-page="login">
   <main class="login-wrapper">
-    <section class="login-card brand-panel">
-      <div>
-        <span class="eyebrow">Controle completo</span>
-        <h1>Sistema de Gestao Comercial</h1>
-        <p>Gerencie compras, vendas, estoque, lucro.</p>
-      </div>
-      <ul class="feature-list">
-        <li>Administracao de despesas e lucros</li>
-        <li>Indicadores automaticos de lucro mensal</li>
-        <li>Alertas visuais para estoque baixo</li>
-      </ul>
+    <section class="login-card brand-panel" id="login-brand-panel">
     </section>
 
     <section class="login-card form-panel">
@@ -47,7 +37,29 @@
   <div id="toast-container" class="toast-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/config.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/auth.js"></script>
+  <script>
+    (function () {
+      const cfg = APP_CONFIG;
+      const panel = document.getElementById('login-brand-panel');
+      if (!panel) return;
+      const logoHtml = cfg.logo
+        ? `<img src="${App.escapeHtml(cfg.logo)}" alt="${App.escapeHtml(cfg.nome)}" style="max-height:${cfg.logoAlturaLogin}px; max-width:100%; object-fit:contain; margin-bottom:16px;">`
+        : `<h1>${App.escapeHtml(cfg.nome)}</h1>`;
+      panel.innerHTML = `
+        <div>
+          <span class="eyebrow">Controle completo</span>
+          ${logoHtml}
+          <p>${App.escapeHtml(cfg.descricaoLogin)}</p>
+        </div>
+        <ul class="feature-list">
+          ${cfg.featuresLogin.map(f => `<li>${App.escapeHtml(f)}</li>`).join('')}
+        </ul>
+      `;
+      document.title = cfg.nome + ' | Login';
+    })();
+  </script>
 </body>
 </html>

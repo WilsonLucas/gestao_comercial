@@ -141,11 +141,14 @@ const App = (() => {
     const topbar = document.getElementById('topbar');
 
     if (sidebar) {
+      const logoHtml = APP_CONFIG.logo
+        ? `<img src="${escapeHtml(APP_CONFIG.logo)}" alt="${escapeHtml(APP_CONFIG.nome)}" style="max-height:${APP_CONFIG.logoAlturaSidebar}px; max-width:100%; object-fit:contain;">`
+        : `<h2>${escapeHtml(APP_CONFIG.nome)}</h2>`;
       sidebar.innerHTML = `
         <div class="sidebar-brand">
           <span class="eyebrow">${escapeHtml(perfil)}</span>
-          <h2>Gestao Comercial</h2>
-          <p>Compras, vendas e estoque</p>
+          ${logoHtml}
+          <p>${escapeHtml(APP_CONFIG.slogan)}</p>
         </div>
         <nav class="sidebar-nav">
           ${menu.map(([key, label, href]) => `<a class="nav-link ${page === key ? 'active' : ''}" href="${escapeHtml(href)}"><span>${escapeHtml(label)}</span></a>`).join('')}
