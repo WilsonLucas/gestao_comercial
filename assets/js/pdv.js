@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  if (document.body.dataset.page !== 'pdv') return;
+  if (document.body.dataset.page !== 'vendas') return;
 
   let carrinho = [];
   let produtosCache = [];

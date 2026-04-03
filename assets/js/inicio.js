@@ -26,9 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     main.innerHTML = `
       ${header}
       <section class="inicio-operador">
-        <a href="pdv.html" class="inicio-pdv-btn">
+        <a href="vendas.html" class="inicio-pdv-btn">
           <span class="inicio-pdv-icon">&#9654;</span>
-          Abrir PDV
+          Abrir Vendas
         </a>
         <a href="historico-dia.html" class="btn btn-secondary inicio-link-secundario">Ver historico do dia</a>
       </section>
@@ -106,9 +106,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   main.innerHTML = `
     ${header}
     <section class="inicio-cards-grid inicio-cols-auto">
-      <a href="pdv.html" class="inicio-card inicio-card-destaque">
+      <a href="vendas.html" class="inicio-card inicio-card-destaque">
         <span class="inicio-card-icon">&#9654;</span>
-        <strong>PDV</strong>
+        <strong>Vendas</strong>
         <span>Registrar vendas</span>
       </a>
       <a href="ingredientes.html" class="inicio-card">

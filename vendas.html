@@ -2,11 +2,72 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=pdv.html">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vendas | Sistema de Gestao Comercial</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body>
-  <p>Redirecionando para <a href="pdv.html">PDV</a>...</p>
+<body data-page="vendas">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-area pdv-content-area">
+      <header class="topbar" id="topbar"></header>
+
+      <!-- Layout totem: categorias | produtos | carrinho -->
+      <div class="pdv-layout">
+
+        <!-- Coluna 1: Categorias -->
+        <nav class="pdv-categorias" id="pdv-categorias">
+          <!-- preenchido via JS -->
+        </nav>
+
+        <!-- Coluna 2: Produtos -->
+        <section class="pdv-produtos-area">
+          <div class="pdv-produtos-grid" id="pdv-produtos-grid">
+            <!-- preenchido via JS -->
+          </div>
+        </section>
+
+        <!-- Coluna 3: Carrinho -->
+        <aside class="pdv-carrinho-panel">
+          <div class="pdv-carrinho-header">
+            <h2>Carrinho</h2>
+            <button class="btn btn-secondary btn-sm" id="pdv-limpar">Limpar</button>
+          </div>
+
+          <div class="pdv-carrinho-itens" id="pdv-carrinho-itens">
+            <p class="pdv-carrinho-vazio">Nenhum item adicionado.</p>
+          </div>
+
+          <div class="pdv-carrinho-footer">
+            <div class="pdv-total-linha">
+              <span>Total</span>
+              <strong id="carrinho-total">R$&nbsp;0,00</strong>
+            </div>
+            <button class="btn btn-primary btn-block" id="pdv-finalizar">Finalizar venda</button>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup de ingredientes -->
+  <div id="pdv-ingredientes-popup" class="pdv-ingredientes-popup">
+    <div class="pdv-popup-box">
+      <div class="pdv-popup-header">
+        <h3 id="pdv-popup-titulo"></h3>
+        <button id="pdv-popup-fechar" class="pdv-popup-fechar" type="button">&times;</button>
+      </div>
+      <ul id="pdv-popup-lista" class="pdv-popup-lista"></ul>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/pdv.js"></script>
 </body>
 </html>

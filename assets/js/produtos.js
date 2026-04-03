@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (deleteId) {
-      const confirmado = await App.confirmar('Inativar este produto? Ele nao aparecera mais no PDV.');
+      const confirmado = await App.confirmar('Inativar este produto? Ele nao aparecera mais em Vendas.');
       if (!confirmado) return;
       App.setLoading(event.target, true);
       const { error } = await db.from('produtos').update({ ativo: false }).eq('id', deleteId);

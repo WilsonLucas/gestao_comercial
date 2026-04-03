@@ -82,7 +82,7 @@ Este sistema resolve esses três pontos de forma automática.
 4. Sistema alerta quando ingrediente atinge o estoque mínimo
    → ingrediente aparece na Lista de Compras
 
-5. Operador (caixa) abre o PDV, monta a COMANDA
+5. Operador (caixa) abre Vendas, monta a COMANDA
    (ex: 3 pastéis de frango + 1 de queijo)
    → sistema verifica se há ingredientes suficientes
 
@@ -102,7 +102,7 @@ Cada usuário acessa apenas o que é necessário para sua função.
 
 ### Perfil 01 — Administrador
 **Quem usa:** Dono da empresa
-**O que pode fazer:** Acessa tudo — estoque, financeiro, PDV, relatórios e cadastro de usuários
+**O que pode fazer:** Acessa tudo — estoque, financeiro, Vendas, relatórios e cadastro de usuários
 
 
 ### Perfil 02 — Financeiro
@@ -143,7 +143,7 @@ Cada usuário acessa apenas o que é necessário para sua função.
 | **Produtos** | Lista de produtos com ficha técnica, custo calculado e margem de lucro |
 | **Compras** | Registro de nova compra de ingrediente e histórico de compras |
 | **Lista de Compras** | Ingredientes abaixo do estoque mínimo com quantidade e valor da última compra |
-| **PDV** | Tela de venda com produtos disponíveis, montagem de comanda e fechamento |
+| **Vendas** | Tela de venda com produtos disponíveis, montagem de comanda e fechamento |
 | **Financeiro** | Resumo mensal (gastos × vendas × lucro) e desempenho por produto |
 | **Usuários** | Cadastro, edição e remoção de usuários do sistema |
 
@@ -203,7 +203,7 @@ Cada usuário acessa apenas o que é necessário para sua função.
 | Suporte a múltiplas lojas/filiais | O piloto é para uma loja |
 | Aplicativo para celular | O sistema funcionará no navegador do celular ou tablet |
 | Cancelamento de venda | Será avaliado em versão futura |
-| Descontos e cupons no PDV | Fora do escopo desta versão |
+| Descontos e cupons em Vendas | Fora do escopo desta versão |
 
 ---
 

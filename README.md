@@ -88,7 +88,7 @@ flowchart TD
     E --> K{Perfil do usuário}
     K -->|administrador| L[8 módulos disponíveis]
     K -->|gerente| M[5 módulos disponíveis]
-    K -->|operador| N[PDV + Histórico do Dia]
+    K -->|operador| N[Vendas + Histórico do Dia]
 
     I --> D
 ```
@@ -105,7 +105,7 @@ graph LR
         a2 --- a3[Produtos]
         a3 --- a4[Lista de Compras]
         a4 --- a5[Compras]
-        a5 --- a6[PDV]
+        a5 --- a6[Vendas]
         a6 --- a7[Financeiro]
         a7 --- a8[Usuários]
     end
@@ -121,7 +121,7 @@ graph LR
 
     subgraph OPE["🧑‍💻 Operador"]
         direction TB
-        o1[Início] --- o2[PDV]
+        o1[Início] --- o2[Vendas]
         o2 --- o3[Histórico do Dia]
     end
 ```
@@ -211,7 +211,7 @@ erDiagram
 
 ```mermaid
 sequenceDiagram
-    participant C as Operador (PDV)
+    participant C as Operador (Vendas)
     participant JS as pdv.js
     participant RPC as fechar_venda()
     participant DB as PostgreSQL
@@ -252,7 +252,8 @@ gestao_comercial/
 ├── produtos.html
 ├── lista-compras.html
 ├── compras.html
-├── pdv.html                    # Totem de vendas (3 colunas)
+├── vendas.html                 # Totem de vendas (3 colunas)
+├── pdv.html                    # Redirect para vendas.html (compatibilidade)
 ├── historico-dia.html
 ├── financeiro.html             # Indicadores + histórico mensal
 ├── usuarios.html
@@ -297,7 +298,7 @@ gestao_comercial/
 | **Produtos** | Admin, Gerente | Cadastro de produtos com ficha técnica, coluna de categoria e filtros por nome, categoria, ingredientes e status |
 | **Lista de Compras** | Admin, Gerente | Ingredientes com estoque crítico ou em atenção que precisam reposição |
 | **Compras** | Admin, Gerente | Registro de entradas no estoque — atualiza `estoque_atual` automaticamente |
-| **PDV** | Admin, Operador | Totem de vendas: categorias → cards de produto → carrinho → finalizar |
+| **Vendas** | Admin, Operador | Totem de vendas: categorias → cards de produto → carrinho → finalizar |
 | **Financeiro** | Admin, Gerente | Indicadores do mês + histórico mensal + últimas 5 vendas + gráfico |
 | **Histórico do Dia** | Admin, Operador | Vendas realizadas hoje com total e lucro do dia |
 | **Usuários** | Admin | Gerenciamento de usuários e perfis de acesso |
