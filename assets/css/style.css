@@ -311,6 +311,22 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 }
 .pdv-card-nome { font-size: 0.88rem; font-weight: 600; color: var(--text); line-height: 1.3; }
 .pdv-card-preco { font-size: 0.95rem; font-weight: 700; color: var(--primary); }
+.pdv-card-esgotado {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+.pdv-card-esgotado:hover { transform: none; box-shadow: var(--shadow); border-color: transparent; }
+.pdv-badge-pouco {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  background: rgba(212,136,6,0.15); color: var(--warning);
+  padding: 2px 8px; border-radius: 999px;
+}
+.pdv-badge-esgotado {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  background: rgba(214,69,69,0.12); color: var(--danger);
+  padding: 2px 8px; border-radius: 999px;
+}
 
 /* Painel do carrinho */
 .pdv-carrinho-panel {

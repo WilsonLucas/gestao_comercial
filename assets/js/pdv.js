@@ -5,15 +5,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   let produtosCache = [];
   let categoriaAtiva = '';
 
-  // ── Carregar produtos ─────────────────────────────────────────────
+  // ── Carregar produtos com ficha tecnica para calcular disponibilidade ─
   async function carregarProdutos() {
     const { data } = await db
       .from('produtos')
-      .select('id, nome, preco_venda, categoria')
+      .select('id, nome, preco_venda, categoria, ficha_tecnica(quantidade, ingredientes(estoque_atual))')
       .eq('ativo', true)
       .order('categoria')
       .order('nome');
-    produtosCache = data || [];
+    produtosCache = (data || []).map((p) => ({
+      ...p,
+      disponivel: calcularDisponivel(p),
+    }));
+  }
+
+  // Calcula quantas unidades do produto podem ser feitas com o estoque atual
+  function calcularDisponivel(produto) {
+    const ficha = produto.ficha_tecnica || [];
+    if (!ficha.length) return null; // sem ficha: sem restricao de estoque
+    const mins = ficha.map((f) => {
+      const estoque = Number(f.ingredientes?.estoque_atual ?? 0);
+      const qtd = Number(f.quantidade);
+      return qtd > 0 ? Math.floor(estoque / qtd) : Infinity;
+    });
+    return Math.min(...mins);
   }
 
   // ── Categorias ────────────────────────────────────────────────────
@@ -46,12 +61,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    grid.innerHTML = filtrado.map((p) => `
-      <button class="pdv-card" data-id="${p.id}" type="button">
-        <span class="pdv-card-nome">${App.escapeHtml(p.nome)}</span>
-        <span class="pdv-card-preco">${App.formatCurrency(p.preco_venda)}</span>
-      </button>
-    `).join('');
+    grid.innerHTML = filtrado.map((p) => {
+      const esgotado = p.disponivel !== null && p.disponivel === 0;
+      const poucoEstoque = p.disponivel !== null && p.disponivel > 0 && p.disponivel <= 5;
+      return `
+        <button class="pdv-card ${esgotado ? 'pdv-card-esgotado' : ''}"
+          data-id="${p.id}" type="button" ${esgotado ? 'disabled' : ''}>
+          ${poucoEstoque ? `<span class="pdv-badge-pouco">Pouco estoque</span>` : ''}
+          ${esgotado ? `<span class="pdv-badge-esgotado">Indisponivel</span>` : ''}
+          <span class="pdv-card-nome">${App.escapeHtml(p.nome)}</span>
+          <span class="pdv-card-preco">${App.formatCurrency(p.preco_venda)}</span>
+        </button>
+      `;
+    }).join('');
   }
 
   // ── Carrinho ──────────────────────────────────────────────────────
