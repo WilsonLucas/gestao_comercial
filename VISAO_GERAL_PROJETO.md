@@ -13,7 +13,7 @@
 | Definição de requisitos | ✅ Concluído |
 | Arquitetura e design | ✅ Concluído |
 | Desenvolvimento do sistema | ✅ Concluído |
-| Deploy e acesso online | ✅ **No ar — Netlify + Supabase** |
+| Deploy e acesso online | ✅ **No ar — GitHub Pages + Supabase** |
 | Dados reais do cardápio inseridos no sistema | ✅ Concluído |
 | Melhorias de interface (UX) | ✅ Concluído |
 | Testes com a equipe | ⏳ Aguardando |
@@ -247,10 +247,10 @@ o sistema atualiza o custo automaticamente a partir da próxima venda.
 | Banco de dados | PostgreSQL (Supabase) | Banco relacional robusto, gerenciado na nuvem |
 | Autenticação | pgcrypto (senha hasheada no banco) | Sem dependência de serviço externo de auth |
 | Backend / API | Supabase (RPC functions + REST) | Elimina a necessidade de servidor próprio |
-| Hospedagem frontend | Netlify | Deploy automático via GitHub, sem custo |
+| Hospedagem frontend | GitHub Pages | Deploy automático via GitHub, sem custo |
 
 **Como funciona na prática:**
-O frontend (HTML/CSS/JS) é hospedado no Netlify e acessa o banco Supabase diretamente pelo navegador, sem servidor intermediário. Isso permite que qualquer membro da equipe acesse o sistema de qualquer dispositivo com internet.
+O frontend (HTML/CSS/JS) é hospedado no GitHub Pages e acessa o banco Supabase diretamente pelo navegador, sem servidor intermediário. Isso permite que qualquer membro da equipe acesse o sistema de qualquer dispositivo com internet.
 
 ---
 
@@ -274,3 +274,6 @@ O frontend (HTML/CSS/JS) é hospedado no Netlify e acessa o banco Supabase diret
 | **Modal de cadastro — Ingredientes** | Mesmo padrão: formulário em modal, tabela em largura total. |
 | **Ficha técnica expandível** | Botão ☰ em cada produto expande sub-tabela com ingredientes, quantidades, custos e margem de lucro. |
 | **Botão casinha (⌂)** | Aparece na topbar em todas as telas exceto na inicial. Leva ao início do perfil logado. |
+| **Coluna Categoria — Produtos** | Tabela de produtos exibe a categoria com badge colorido. Categorias: Pastéis Salgados, Pastéis Doces, Porções, Misto Quente, Bebidas. |
+| **Filtros avançados — Produtos** | Barra de filtros com busca por nome, ingrediente, e multi-select por categoria e status (Ativo/Inativo). Filtragem client-side sem recarregar página. |
+| **HTMLs na raiz do projeto** | Todas as páginas movidas para a raiz (sem pasta `pages/`), mantendo compatibilidade com as URLs do GitHub Pages. |

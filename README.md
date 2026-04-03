@@ -25,8 +25,8 @@ graph TB
     subgraph Browser["Navegador"]
         direction TB
         INDEX["index.html\n(entry point)"]
-        LOGIN["pages/login.html"]
-        PAGES["pages/*.html\n(12 páginas)"]
+        LOGIN["login.html"]
+        PAGES["*.html\n(12 páginas)"]
 
         subgraph JS["Assets JavaScript"]
             CONFIG["config.js\nBranding multi-cliente"]
@@ -75,8 +75,8 @@ graph TB
 flowchart TD
     A([Usuário acessa o site]) --> B[index.html]
     B --> C{Sessão válida\nem localStorage?}
-    C -->|Não| D[pages/login.html]
-    C -->|Sim| E[pages/inicio.html]
+    C -->|Não| D[login.html]
+    C -->|Sim| E[inicio.html]
 
     D --> F[Preenche e-mail + senha]
     F --> G["RPC autenticar()"]
@@ -245,18 +245,19 @@ sequenceDiagram
 
 ```
 gestao_comercial/
-├── index.html                  # Entry point — redireciona para pages/
-├── pages/                      # Todas as páginas da aplicação
-│   ├── login.html
-│   ├── inicio.html             # Hub pós-login (layout por perfil)
-│   ├── ingredientes.html
-│   ├── produtos.html
-│   ├── lista-compras.html
-│   ├── compras.html
-│   ├── pdv.html                # Totem de vendas (3 colunas)
-│   ├── historico-dia.html
-│   ├── financeiro.html         # Indicadores + histórico mensal
-│   └── usuarios.html
+├── index.html                  # Entry point — redireciona para inicio.html ou login.html
+├── login.html
+├── inicio.html                 # Hub pós-login (layout por perfil)
+├── ingredientes.html
+├── produtos.html
+├── lista-compras.html
+├── compras.html
+├── pdv.html                    # Totem de vendas (3 colunas)
+├── historico-dia.html
+├── financeiro.html             # Indicadores + histórico mensal
+├── usuarios.html
+├── vendas.html
+├── estoque.html
 ├── assets/
 │   ├── css/
 │   │   └── style.css           # Único arquivo de estilos
@@ -293,7 +294,7 @@ gestao_comercial/
 |--------|--------|--------|
 | **Início** | Todos | Hub de navegação adaptado por perfil; gerente vê alertas de estoque em tempo real |
 | **Ingredientes** | Admin, Gerente | CRUD completo de ingredientes com controle de estoque e preço de compra |
-| **Produtos** | Admin, Gerente | Cadastro de produtos com ficha técnica de ingredientes e preço de venda |
+| **Produtos** | Admin, Gerente | Cadastro de produtos com ficha técnica, coluna de categoria e filtros por nome, categoria, ingredientes e status |
 | **Lista de Compras** | Admin, Gerente | Ingredientes com estoque crítico ou em atenção que precisam reposição |
 | **Compras** | Admin, Gerente | Registro de entradas no estoque — atualiza `estoque_atual` automaticamente |
 | **PDV** | Admin, Operador | Totem de vendas: categorias → cards de produto → carrinho → finalizar |
