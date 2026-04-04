@@ -26,11 +26,12 @@ graph TB
         direction TB
         INDEX["index.html\n(entry point)"]
         LOGIN["login.html"]
+        COZINHA["cozinha.html\n(tablet — sem sidebar)"]
         PAGES["*.html\n(12 páginas)"]
 
         subgraph JS["Assets JavaScript"]
             CONFIG["config.js\nBranding multi-cliente"]
-            APP["app.js\nShell, menu, sessão"]
+            APP["app.js\nShell, menu, sessão, perfil validation"]
             AUTH["auth.js\nLogin / guard de rota"]
             PAGES_JS["*.js por página"]
         end
@@ -42,9 +43,15 @@ graph TB
             F1["autenticar()"]
             F2["fechar_venda()"]
             F3["registrar_compra()"]
-            F4["excluir_compra()"]
+            F4["excluir_compra(chamador)"]
             F5["dashboard_metrics()"]
-            F6["criar_usuario()"]
+            F6["marcar_entregue()"]
+            F7["criar_usuario(chamador)"]
+            F8["alterar_senha(chamador)"]
+            F9["listar_usuarios(chamador)"]
+            F10["buscar_usuario(chamador)"]
+            F11["atualizar_usuario(chamador)"]
+            F12["desativar_usuario(chamador)"]
         end
         subgraph DB["PostgreSQL"]
             T1[("usuarios")]
@@ -55,12 +62,13 @@ graph TB
             T6[("vendas")]
             T7[("itens_venda")]
         end
-        RLS["Row Level Security"]
+        RLS["Row Level Security\n(acesso direto bloqueado)"]
     end
 
     INDEX -->|redireciona| LOGIN
     LOGIN -->|"autenticar() → sessão 8h"| F1
-    PAGES -->|"db.rpc() / db.from()"| RPC
+    PAGES -->|"db.rpc()"| RPC
+    COZINHA -->|"db.rpc('marcar_entregue')"| F6
     RPC --> DB
     RLS -.->|protege| DB
     APP -->|"renderAppShell()"| PAGES
@@ -86,11 +94,15 @@ flowchart TD
     J --> E
 
     E --> K{Perfil do usuário}
-    K -->|administrador| L[8 módulos disponíveis]
-    K -->|gerente| M[5 módulos disponíveis]
-    K -->|operador| N[Vendas + Histórico do Dia]
+    K -->|administrador| L["8 módulos\n+ Cozinha"]
+    K -->|gerente| M["5 módulos"]
+    K -->|operador| N["PDV + Cozinha\n+ Histórico do Dia"]
 
     I --> D
+
+    style L fill:#2d6a4f,color:#fff
+    style M fill:#1d3557,color:#fff
+    style N fill:#6b4226,color:#fff
 ```
 
 ---
@@ -99,18 +111,19 @@ flowchart TD
 
 ```mermaid
 graph LR
-    subgraph ADM["👑 Administrador"]
+    subgraph ADM["Administrador"]
         direction TB
         a1[Início] --- a2[Ingredientes]
         a2 --- a3[Produtos]
         a3 --- a4[Lista de Compras]
         a4 --- a5[Compras]
-        a5 --- a6[Vendas]
-        a6 --- a7[Financeiro]
-        a7 --- a8[Usuários]
+        a5 --- a6[PDV]
+        a6 --- a7[Cozinha]
+        a7 --- a8[Financeiro]
+        a8 --- a9[Usuários]
     end
 
-    subgraph GER["🧑‍💼 Gerente"]
+    subgraph GER["Gerente"]
         direction TB
         g1[Início] --- g2[Ingredientes]
         g2 --- g3[Produtos]
@@ -119,10 +132,11 @@ graph LR
         g5 --- g6[Financeiro]
     end
 
-    subgraph OPE["🧑‍💻 Operador"]
+    subgraph OPE["Operador"]
         direction TB
-        o1[Início] --- o2[Vendas]
-        o2 --- o3[Histórico do Dia]
+        o1[Início] --- o2[PDV]
+        o2 --- o3[Cozinha]
+        o3 --- o4[Histórico do Dia]
     end
 ```
 
@@ -183,6 +197,8 @@ erDiagram
         numeric total
         numeric custo_total
         numeric lucro
+        text status
+        timestamptz entregue_em
         uuid operador_id FK
     }
 
@@ -207,85 +223,79 @@ erDiagram
 
 ---
 
-## Fluxo de Venda — RPC `fechar_venda()`
+## Fluxo de Venda — da Abertura à Entrega
 
 ```mermaid
 sequenceDiagram
-    participant C as Operador (Vendas)
-    participant JS as pdv.js
-    participant RPC as fechar_venda()
+    participant OP as Operador (PDV)
+    participant PDV as pdv.js
+    participant COZ as cozinha.js
+    participant RPC as RPCs (Supabase)
     participant DB as PostgreSQL
 
-    C->>JS: Clica "Finalizar venda"
-    JS->>JS: App.confirmar() — modal de confirmação
-    JS->>RPC: db.rpc('fechar_venda', {p_itens, p_operador_id})
+    OP->>PDV: Monta comanda e clica "Finalizar"
+    PDV->>PDV: App.confirmar() — modal
+    PDV->>RPC: fechar_venda({p_itens, p_operador_id})
 
     loop Para cada item
-        RPC->>DB: Verificar estoque (ficha_tecnica × ingredientes)
-        DB-->>RPC: estoque_atual vs. qtd_necessaria
+        RPC->>DB: Verifica estoque (ficha_tecnica × ingredientes)
         alt Estoque insuficiente
-            RPC-->>JS: {erro: "Estoque insuficiente: ..."}
-            JS-->>C: Toast de erro
+            RPC-->>PDV: {erro: "Estoque insuficiente: ..."}
+            PDV-->>OP: Toast de erro
         end
-    end
-
-    RPC->>DB: INSERT INTO vendas
-    loop Para cada item
-        RPC->>DB: INSERT INTO itens_venda
+        RPC->>DB: INSERT itens_venda
         RPC->>DB: UPDATE ingredientes (desconta estoque)
     end
 
-    RPC-->>JS: {venda_id, total, lucro}
-    JS-->>C: Toast "Venda finalizada! Total: R$ X,XX"
+    RPC->>DB: INSERT vendas (status = 'pendente')
+    RPC-->>PDV: {venda_id, total, lucro}
+    PDV-->>OP: Toast "Venda finalizada!"
+
+    Note over COZ: Cozinha atualiza a cada 30s
+    COZ->>RPC: db.from('vendas').select(...).eq('data', hoje)
+    RPC-->>COZ: Lista de pedidos pendentes
+
+    COZ->>RPC: marcar_entregue({p_venda_id})
+    RPC->>DB: UPDATE vendas SET status='entregue', entregue_em=NOW()
+    RPC-->>COZ: {sucesso: true}
+    COZ-->>COZ: Card animado → aba Entregues
 ```
 
 ---
 
-## Estrutura de Arquivos
+## Arquitetura de Segurança
 
+```mermaid
+flowchart LR
+    subgraph Client["Frontend (anon)"]
+        JS["JavaScript\n(sem JWT)"]
+    end
+
+    subgraph Gateway["PostgREST / Supabase"]
+        RLS["RLS bloqueia\nDML direto"]
+        RPC["RPCs SECURITY DEFINER\nvalida p_chamador_id"]
+    end
+
+    subgraph Database["PostgreSQL"]
+        T["Tabelas protegidas"]
+    end
+
+    JS -->|"db.from() SELECT"| RLS
+    JS -->|"db.rpc() — passa chamador_id"| RPC
+    RLS -->|SELECT autorizado| T
+    RLS -->|INSERT/UPDATE/DELETE bloqueado| X["❌ 0 rows / erro"]
+    RPC -->|"valida perfil='administrador'"| T
+
+    style X fill:#c0392b,color:#fff
+    style RPC fill:#27ae60,color:#fff
 ```
-gestao_comercial/
-├── index.html                  # Entry point — redireciona para inicio.html ou login.html
-├── login.html
-├── inicio.html                 # Hub pós-login (layout por perfil)
-├── ingredientes.html
-├── produtos.html
-├── lista-compras.html
-├── compras.html
-├── vendas.html                 # Totem de vendas (3 colunas)
-├── pdv.html                    # Redirect para vendas.html (compatibilidade)
-├── historico-dia.html
-├── financeiro.html             # Indicadores + histórico mensal
-├── usuarios.html
-├── vendas.html
-├── estoque.html
-├── assets/
-│   ├── css/
-│   │   └── style.css           # Único arquivo de estilos
-│   └── js/
-│       ├── config.js           # Branding do cliente (única fonte de verdade)
-│       ├── app.js              # Shell, menu, sessão, utilitários
-│       ├── auth.js             # Login e guard de rotas
-│       ├── supabase-client.js  # Inicialização do Supabase
-│       ├── inicio.js
-│       ├── ingredientes.js
-│       ├── produtos.js
-│       ├── lista-compras.js
-│       ├── compras.js
-│       ├── pdv.js
-│       ├── historico-dia.js
-│       ├── financeiro.js
-│       └── usuarios.js
-└── supabase/
-    ├── migrations/
-    │   ├── 001_schema_supabase.sql     # Schema inicial + RPCs
-    │   ├── 002_add_categoria_produtos.sql
-    │   ├── 003_security_hardening.sql
-    │   ├── 004_perfil_gerente.sql
-    │   └── 005_observacao_itens_venda.sql
-    ├── seed.sql                # Usuários padrão
-    └── seed_cardapio.sql       # Produtos e ingredientes de exemplo
-```
+
+**Princípios aplicados:**
+- Todo `INSERT`, `UPDATE` e `DELETE` sensível passa por RPC com `SECURITY DEFINER`
+- RPCs que alteram dados exigem `p_chamador_id` (UUID do usuário logado) validado contra a tabela `usuarios`
+- Nenhuma policy de `DELETE` direta existe em tabelas críticas (`compras`, `vendas`, `usuarios`)
+- `isLoggedIn()` rejeita sessões com `perfil` fora do conjunto `{administrador, gerente, operador}`
+- Todos os valores do banco inseridos via `innerHTML` passam por `App.escapeHtml()` (XSS prevention)
 
 ---
 
@@ -293,29 +303,87 @@ gestao_comercial/
 
 | Página | Perfis | Função |
 |--------|--------|--------|
-| **Início** | Todos | Hub de navegação adaptado por perfil; gerente vê alertas de estoque em tempo real |
-| **Ingredientes** | Admin, Gerente | CRUD completo de ingredientes com controle de estoque e preço de compra |
-| **Produtos** | Admin, Gerente | Cadastro de produtos com ficha técnica, coluna de categoria e filtros por nome, categoria, ingredientes e status |
+| **Início** | Todos | Hub de navegação adaptado por perfil; alertas de estoque para gerente e admin |
+| **Ingredientes** | Admin, Gerente | CRUD completo com controle de estoque, preço de compra e status |
+| **Produtos** | Admin, Gerente | Cadastro com ficha técnica, custo calculado, margem de lucro e filtros avançados |
 | **Lista de Compras** | Admin, Gerente | Ingredientes com estoque crítico ou em atenção que precisam reposição |
-| **Compras** | Admin, Gerente | Registro de entradas no estoque — atualiza `estoque_atual` automaticamente |
-| **Vendas** | Admin, Operador | Totem de vendas: categorias → cards de produto → carrinho → finalizar |
-| **Financeiro** | Admin, Gerente | Indicadores do mês + histórico mensal + últimas 5 vendas + gráfico |
-| **Histórico do Dia** | Admin, Operador | Vendas realizadas hoje com total e lucro do dia |
-| **Usuários** | Admin | Gerenciamento de usuários e perfis de acesso |
+| **Compras** | Admin, Gerente | Registro de entradas no estoque — atualiza `estoque_atual` via RPC atômica |
+| **PDV (Vendas)** | Admin, Operador | Totem de vendas: categorias → cards de produto → carrinho → finalizar |
+| **Cozinha** | Admin, Operador | Acompanhamento de pedidos em tempo real: fila pendente + entregues; botão "Entregar" |
+| **Financeiro** | Admin, Gerente | Indicadores do mês + histórico mensal + últimas vendas |
+| **Histórico do Dia** | Admin, Operador | Vendas realizadas hoje com total e lucro |
+| **Usuários** | Admin | Gerenciamento de usuários e perfis via RPCs autorizadas |
 
 ---
 
 ## RPC Functions (Supabase)
 
-| Função | Descrição |
-|--------|-----------|
-| `autenticar(email, senha)` | Login customizado via `pgcrypto` — retorna dados do usuário ou erro |
-| `fechar_venda(itens, operador_id)` | Fecha venda atomicamente: valida estoque, insere venda + itens, desconta ingredientes |
-| `registrar_compra(...)` | Registra compra e incrementa `estoque_atual` do ingrediente |
-| `excluir_compra(id)` | Exclui compra e reverte o estoque — operação atômica |
-| `dashboard_metrics()` | Retorna lucro, receita e gastos do mês + contagem de estoque crítico |
-| `criar_usuario(...)` | Cria usuário com senha hasheada via `bcrypt` |
-| `alterar_senha(id, nova_senha)` | Atualiza senha com novo hash |
+| Função | Auth exigida | Descrição |
+|--------|-------------|-----------|
+| `autenticar(email, senha)` | — | Login via `pgcrypto` — retorna dados do usuário ou erro |
+| `fechar_venda(itens, operador_id)` | — | Fecha venda atomicamente: valida estoque, insere venda + itens, desconta ingredientes |
+| `registrar_compra(...)` | — | Registra compra e incrementa `estoque_atual` do ingrediente |
+| `excluir_compra(id, chamador_id)` | admin | Exclui compra e reverte estoque — operação atômica |
+| `marcar_entregue(venda_id)` | — | Atualiza `status='entregue'` e `entregue_em=NOW()` |
+| `dashboard_metrics()` | — | Retorna lucro, receita, gastos do mês e estoque crítico |
+| `criar_usuario(nome, email, senha, perfil, chamador_id)` | admin | Cria usuário com senha hasheada via `bcrypt` |
+| `alterar_senha(usuario_id, nova_senha, chamador_id)` | admin ou próprio | Atualiza senha com novo hash |
+| `listar_usuarios(chamador_id)` | admin | SELECT seguro — sem policy direta na tabela |
+| `buscar_usuario(id, chamador_id)` | admin | SELECT por ID via RPC |
+| `atualizar_usuario(id, nome, email, perfil, chamador_id)` | admin | UPDATE com validação de perfil |
+| `desativar_usuario(id, chamador_id)` | admin | Soft delete — impede auto-desativação |
+
+---
+
+## Estrutura de Arquivos
+
+```
+gestao_comercial/
+├── index.html                  # Entry point — redireciona para inicio ou login
+├── login.html
+├── inicio.html                 # Hub pós-login (layout por perfil)
+├── ingredientes.html
+├── produtos.html
+├── lista-compras.html
+├── compras.html
+├── pdv.html                    # Totem de vendas (3 colunas)
+├── cozinha.html                # Layout tablet — sem sidebar
+├── historico-dia.html
+├── financeiro.html             # Indicadores + histórico mensal
+├── usuarios.html
+├── estoque.html
+├── assets/
+│   ├── css/
+│   │   └── style.css           # Único arquivo de estilos
+│   └── js/
+│       ├── config.js           # Branding do cliente (única fonte de verdade)
+│       ├── app.js              # Shell, menu, sessão, perfil validation
+│       ├── auth.js             # Login e guard de rotas
+│       ├── supabase-client.js  # Inicialização do Supabase
+│       ├── api.js              # Funções de acesso ao banco reutilizáveis
+│       ├── inicio.js
+│       ├── ingredientes.js
+│       ├── produtos.js
+│       ├── lista-compras.js
+│       ├── compras.js
+│       ├── pdv.js
+│       ├── cozinha.js          # Polling 30s, tabs Fila/Entregues, RPC marcar_entregue
+│       ├── historico-dia.js
+│       ├── financeiro.js
+│       └── usuarios.js         # Toda gestão via RPCs autorizadas
+└── supabase/
+    ├── migrations/
+    │   ├── 001_schema_supabase.sql         # Schema inicial + RPCs base
+    │   ├── 002_add_categoria_produtos.sql  # Coluna categoria em produtos
+    │   ├── 003_security_hardening.sql      # RLS + remoção de policies permissivas
+    │   ├── 004_perfil_gerente.sql          # Perfil gerente
+    │   ├── 005_observacao_itens_venda.sql  # Campo observação por item
+    │   ├── 006_status_vendas.sql           # Coluna status + entregue_em em vendas
+    │   ├── 007_rpc_marcar_entregue.sql     # RPC para atualização de status da cozinha
+    │   └── 008_security_fixes.sql          # Auditoria: chamador_id, XSS, policies
+    ├── seed.sql                            # Usuários padrão (3 perfis)
+    └── seed_cardapio.sql                   # Produtos e ingredientes de exemplo
+```
 
 ---
 
@@ -352,6 +420,9 @@ Nenhum outro arquivo precisa ser alterado para rebrand.
    003_security_hardening.sql
    004_perfil_gerente.sql
    005_observacao_itens_venda.sql
+   006_status_vendas.sql
+   007_rpc_marcar_entregue.sql
+   008_security_fixes.sql
    ```
 3. Execute `seed.sql` para criar os usuários padrão
 4. _(Opcional)_ Execute `seed_cardapio.sql` para dados de exemplo
@@ -361,9 +432,11 @@ Nenhum outro arquivo precisa ser alterado para rebrand.
 
 ## Decisões de Arquitetura
 
-- **Sem React/Vue** — Vanilla JS intencional; ambos os devs dominam a stack
-- **Sem Supabase Auth nativo** — autenticação customizada via `pgcrypto` para controle total
-- **Sem Node.js** — Supabase substitui completamente qualquer backend
-- **RPC SECURITY DEFINER** — operações críticas (venda, compra) rodam com permissões elevadas no servidor, não expostas ao cliente
+- **Sem React/Vue** — Vanilla JS intencional; o time domina a stack sem overhead de framework
+- **Sem Supabase Auth nativo** — autenticação customizada via `pgcrypto` para controle total dos perfis
+- **Sem Node.js** — Supabase substitui completamente qualquer backend intermediário
+- **RPC SECURITY DEFINER** — operações críticas (venda, compra, cozinha) rodam com permissões elevadas no servidor
+- **`p_chamador_id` em RPCs sensíveis** — autorização server-side; o frontend não pode falsificar o chamador sem ter o UUID real da sessão
 - **Soft delete em produtos** — `ativo = false` preserva histórico financeiro
-- **`config.js` como única fonte de verdade** — sistema desenhado para multi-cliente
+- **`config.js` como única fonte de verdade** — sistema desenhado para multi-cliente sem reescrita de código
+- **Polling na Cozinha** — atualização automática a cada 30s; sem WebSocket para manter a stack simples
