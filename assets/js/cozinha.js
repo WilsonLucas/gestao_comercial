@@ -177,13 +177,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const card = btn.closest('.cozinha-card');
     btn.disabled = true;
 
-    const { error } = await db
-      .from('vendas')
-      .update({ status: 'entregue', entregue_em: new Date().toISOString() })
-      .eq('id', vendaId);
+    const { data: resultado, error } = await db
+      .rpc('marcar_entregue', { p_venda_id: vendaId });
 
-    if (error) {
-      App.showToast('Erro ao atualizar pedido.', 'error');
+    const falhou = error || resultado?.erro;
+    if (falhou) {
+      App.showToast(resultado?.erro || 'Erro ao atualizar pedido.', 'error');
       btn.disabled = false;
       return;
     }
