@@ -687,9 +687,18 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 }
 .cozinha-topbar-esquerda {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
 }
+.cozinha-btn-inicio {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 12px; border-radius: var(--radius);
+  border: 1px solid var(--border-color, #e5e7eb);
+  color: var(--text); font-size: 0.85rem; font-weight: 600;
+  text-decoration: none; white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.cozinha-btn-inicio:hover { background: var(--bg); border-color: var(--primary); color: var(--primary); }
 .cozinha-topbar-centro {
   display: flex;
   align-items: center;
