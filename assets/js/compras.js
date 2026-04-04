@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     App.setLoading(event.target, true);
     try {
-      const { data: result, error } = await db.rpc('excluir_compra', { p_compra_id: deleteId });
+      const { data: result, error } = await db.rpc('excluir_compra', { p_compra_id: deleteId, p_chamador_id: App.getUsuario()?.id });
       if (error || result?.erro) throw new Error(result?.erro || error?.message || 'Erro ao excluir compra.');
 
       App.showToast('Compra excluida com sucesso.', 'warning');

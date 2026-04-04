@@ -7,8 +7,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function renderTable() {
     const tbody = document.getElementById('usuarios-body');
-    const { data: lista, error } = await db.from('usuarios').select('id, nome, email, perfil, ativo').order('nome');
-    if (error) {
+    const chamador = App.getUsuario();
+    const resultado = await db.rpc('listar_usuarios', { p_chamador_id: chamador?.id });
+    const lista = resultado.data;
+    if (resultado.error || lista?.erro) {
       tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erro ao carregar usuarios.</td></tr>';
       return;
     }
@@ -47,18 +49,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const senha  = document.getElementById('usuario-senha').value.trim();
     const perfil = document.getElementById('usuario-perfil').value;
 
+    const chamador = App.getUsuario();
     try {
       if (id) {
-        const { error } = await db.from('usuarios').update({ nome, email, perfil }).eq('id', id);
-        if (error) throw error;
+        const { data: result } = await db.rpc('atualizar_usuario', { p_id: id, p_nome: nome, p_email: email, p_perfil: perfil, p_chamador_id: chamador?.id });
+        if (result?.erro) throw new Error(result.erro);
         if (senha) {
-          const { data: result } = await db.rpc('alterar_senha', { p_usuario_id: id, p_nova_senha: senha });
-          if (result?.erro) throw new Error(result.erro);
+          const { data: resultSenha } = await db.rpc('alterar_senha', { p_usuario_id: id, p_nova_senha: senha, p_chamador_id: chamador?.id });
+          if (resultSenha?.erro) throw new Error(resultSenha.erro);
         }
         App.showToast('Usuario atualizado com sucesso.');
       } else {
         if (!senha) { App.showToast('Senha e obrigatoria para novo usuario.', 'error'); return; }
-        const { data: result } = await db.rpc('criar_usuario', { p_nome: nome, p_email: email, p_senha: senha, p_perfil: perfil });
+        const { data: result } = await db.rpc('criar_usuario', { p_nome: nome, p_email: email, p_senha: senha, p_perfil: perfil, p_chamador_id: chamador?.id });
         if (result?.erro) throw new Error(result.erro);
         App.showToast('Usuario cadastrado com sucesso.');
       }
@@ -74,8 +77,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const deleteId = event.target.dataset.delete;
 
     if (editId) {
-      const { data: u } = await db.from('usuarios').select('id, nome, email, perfil').eq('id', editId).single();
-      if (!u) return;
+      const chamador = App.getUsuario();
+      const { data: u } = await db.rpc('buscar_usuario', { p_id: editId, p_chamador_id: chamador?.id });
+      if (!u || u.erro) return;
       idInput.value = u.id;
       document.getElementById('usuario-nome').value  = u.nome;
       document.getElementById('usuario-email').value = u.email;
@@ -90,9 +94,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const confirmado = await App.confirmar('Desativar este usuario? Ele perdera acesso ao sistema.');
       if (!confirmado) return;
       App.setLoading(event.target, true);
-      const { error } = await db.from('usuarios').update({ ativo: false }).eq('id', deleteId);
-      if (error) {
-        App.showToast('Erro ao desativar usuario.', 'error');
+      const chamador = App.getUsuario();
+      const { data: result } = await db.rpc('desativar_usuario', { p_id: deleteId, p_chamador_id: chamador?.id });
+      if (result?.erro) {
+        App.showToast(result.erro, 'error');
         App.setLoading(event.target, false);
         return;
       }

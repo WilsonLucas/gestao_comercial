@@ -54,9 +54,15 @@ const App = (() => {
     window.location.href = 'login.html';
   }
 
+  const PERFIS_VALIDOS = new Set(['administrador', 'gerente', 'operador']);
+
   function isLoggedIn() {
     const usuario = getUsuario();
     if (!usuario) return false;
+    if (!PERFIS_VALIDOS.has(usuario.perfil)) {
+      localStorage.removeItem('sgc_user');
+      return false;
+    }
     // Verificar TTL da sessao (8 horas)
     if (usuario.expira_em && Date.now() > usuario.expira_em) {
       localStorage.removeItem('sgc_user');

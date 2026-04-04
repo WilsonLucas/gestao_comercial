@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tbody.innerHTML = (vendas || []).length ? (vendas || []).map((venda) => {
       totalDia += Number(venda.total);
       lucroDia += Number(venda.lucro);
-      const itensStr = (venda.itens_venda || []).map((i) => `${i.produtos?.nome} x${i.quantidade}`).join(', ');
+      const itensStr = (venda.itens_venda || []).map((i) => `${App.escapeHtml(i.produtos?.nome || '?')} x${i.quantidade}`).join(', ');
       return `
         <tr>
           <td>${new Date(venda.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</td>
