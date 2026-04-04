@@ -112,16 +112,13 @@ Cada usuário acessa apenas o que é necessário para sua função.
 **Quem usa:** Dono da empresa
 **O que pode fazer:** Acessa tudo — estoque, financeiro, PDV, Cozinha, relatórios e cadastro de usuários
 
-
 ### Perfil 02 — Gerente
 **Quem usa:** Responsável pelo estoque e financeiro
 **O que pode fazer:** Cadastra ingredientes e produtos (com ficha técnica), registra compras, acompanha estoque, lista de compras e resultados financeiros
 
-
 ### Perfil 03 — Operador
 **Quem usa:** Caixa / atendente
 **O que pode fazer:** Monta comanda com os produtos, fecha a venda, acompanha a fila na Cozinha, vê histórico do dia
-
 
 ---
 
