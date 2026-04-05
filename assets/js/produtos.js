@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <tr class="ficha-detalhe-row">
             <td>${App.escapeHtml(f.ingredientes?.nome || '-')}</td>
             <td>${App.escapeHtml(f.ingredientes?.unidade || '-')}</td>
-            <td>${Number(f.quantidade).toFixed(3)}</td>
+            <td>${parseFloat(Number(f.quantidade).toFixed(3))}</td>
             <td>${App.formatCurrency(f.ingredientes?.preco_compra || 0)}</td>
             <td>${App.formatCurrency(custoItem)}</td>
           </tr>
