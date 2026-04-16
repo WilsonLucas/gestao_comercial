@@ -71,17 +71,11 @@ body.painel-tv {
 .painel-logo {
   display: flex;
   align-items: center;
-  gap: 0.8vw;
   font-weight: 800;
-  font-size: 3vh;
   letter-spacing: 0.02em;
 }
-.painel-logo-icon {
-  font-size: 4.2vh;
-  filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.35));
-}
 .painel-logo-texto {
-  font-size: 2.6vh;
+  font-size: 3vh;
   color: var(--text);
 }
 .painel-clock {
