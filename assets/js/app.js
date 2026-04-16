@@ -136,6 +136,7 @@ const App = (() => {
     const page = document.body.dataset.page;
     if (page === 'login') return;
     if (page === 'cozinha') return;
+    if (page === 'painel') return; // Painel TV v1.2 — página pública, sem shell
 
     const usuario = getUsuario();
     if (!usuario) {

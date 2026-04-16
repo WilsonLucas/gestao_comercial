@@ -26,10 +26,39 @@
         <button class="btn btn-secondary" id="cozinha-sair" type="button">Sair</button>
       </div>
     </header>
-    <div class="cozinha-grid" id="cozinha-grid"></div>
+
+    <!-- Fila: 3 colunas FSM (pendente / em_preparo / pronto) -->
+    <div class="cozinha-fsm" id="cozinha-fsm">
+      <section class="cozinha-col cozinha-col--pendente">
+        <h3 class="cozinha-col-titulo">
+          <span>Pendente</span>
+          <span class="cozinha-col-badge" id="count-pendente">0</span>
+        </h3>
+        <div class="cozinha-col-body" id="col-pendente"></div>
+      </section>
+
+      <section class="cozinha-col cozinha-col--em-preparo">
+        <h3 class="cozinha-col-titulo">
+          <span>Em Preparo</span>
+          <span class="cozinha-col-badge" id="count-em-preparo">0</span>
+        </h3>
+        <div class="cozinha-col-body" id="col-em-preparo"></div>
+      </section>
+
+      <section class="cozinha-col cozinha-col--pronto">
+        <h3 class="cozinha-col-titulo">
+          <span>Pronto</span>
+          <span class="cozinha-col-badge" id="count-pronto">0</span>
+        </h3>
+        <div class="cozinha-col-body" id="col-pronto"></div>
+      </section>
+    </div>
+
+    <!-- Aba Entregues (mantém layout em grid) -->
     <div class="cozinha-grid" id="cozinha-grid-entregues" style="display:none"></div>
   </div>
 
+  <div id="toast-container" class="toast-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/config.js"></script>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1.0">
+  <title>Painel do Cliente | Pastelaria Bom Sabor</title>
+
+  <!-- Tipografia Inter (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap">
+
+  <link rel="stylesheet" href="assets/css/painel.css">
+</head>
+<!--
+  Painel do Cliente (TV) — v1.2
+  Página PÚBLICA, read-only, sem autenticação (data-page="painel").
+  Carrega apenas supabase-client.js + painel.js — NÃO carrega auth.js,
+  app.js nem config.js. Polling 5s em painel_cliente_view.
+-->
+<body data-page="painel" class="painel-tv">
+
+  <header class="painel-header">
+    <div class="painel-header-left">
+      <div class="painel-logo" aria-label="Logo">
+        <span class="painel-logo-icon" aria-hidden="true">&#9749;</span>
+        <span class="painel-logo-texto">Pastelaria Bom Sabor</span>
+      </div>
+    </div>
+    <div class="painel-header-right">
+      <div class="painel-conn" id="painel-conn" data-status="ok" title="Status da conexão">
+        <span class="painel-conn-dot"></span>
+        <span class="painel-conn-label">Online</span>
+      </div>
+      <div class="painel-clock" id="painel-clock" aria-label="Hora atual">--:--</div>
+    </div>
+  </header>
+
+  <main class="painel-grid" id="painel-grid">
+    <section class="painel-col col-aguardando" data-status="pendente">
+      <header class="painel-col-head">
+        <h2>AGUARDANDO</h2>
+        <span class="painel-col-count" id="count-pendente" aria-live="polite">0</span>
+      </header>
+      <div class="painel-cards" id="col-pendente"></div>
+      <div class="painel-col-pag" id="pag-pendente" hidden></div>
+    </section>
+
+    <section class="painel-col col-em-preparo" data-status="em_preparo">
+      <header class="painel-col-head">
+        <h2>EM PREPARO</h2>
+        <span class="painel-col-count" id="count-em-preparo" aria-live="polite">0</span>
+      </header>
+      <div class="painel-cards" id="col-em-preparo"></div>
+      <div class="painel-col-pag" id="pag-em-preparo" hidden></div>
+    </section>
+
+    <section class="painel-col col-pronto" data-status="pronto">
+      <header class="painel-col-head">
+        <h2>PRONTO</h2>
+        <span class="painel-col-count" id="count-pronto" aria-live="polite">0</span>
+      </header>
+      <div class="painel-cards" id="col-pronto"></div>
+      <div class="painel-col-pag" id="pag-pronto" hidden></div>
+    </section>
+  </main>
+
+  <!-- Estado vazio global (quando não há nenhum pedido no dia) -->
+  <div class="painel-empty" id="painel-empty" hidden>
+    <div class="painel-empty-box">
+      <h3>Bem-vindo!</h3>
+      <p>Faça seu pedido no balcão.</p>
+    </div>
+  </div>
+
+  <footer class="painel-footer">
+    <span>Aguarde ser chamado</span>
+    <span class="painel-footer-sep">&bull;</span>
+    <span>Pastelaria Bom Sabor</span>
+  </footer>
+
+  <!-- Aviso apenas para quem abrir em tela pequena durante dev -->
+  <div class="painel-dev-warning">
+    <p><strong>Painel TV.</strong> Esta página foi desenhada para TVs 1080p em modo paisagem. Abra em kiosk fullscreen.</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/painel.js"></script>
+</body>
+</html>

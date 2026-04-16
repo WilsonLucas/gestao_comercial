@@ -1,0 +1,353 @@
+/* ============================================================
+   painel.css — Painel do Cliente (TV)
+   Design tokens v1.2 — otimizado para TV 1920x1080 a 3-6m de distância.
+   Contraste WCAG AAA nas 3 colunas, tipografia Inter com tabular-nums.
+   ============================================================ */
+
+.painel-tv {
+  /* ── Cores base ─────────────────────────────────────────────── */
+  --bg:            #0F172A;
+  --surface:       #1E293B;
+  --text:          #F8FAFC;
+  --muted:         #94A3B8;
+  --border:        rgba(255, 255, 255, 0.08);
+
+  /* ── Colunas (cores e ink com contraste AAA) ───────────────── */
+  --aguardando:     #E11D48;
+  --aguardando-bg:  #FFF1F2;
+  --aguardando-ink: #881337;
+
+  --preparo:        #F59E0B;
+  --preparo-bg:     #FFFBEB;
+  --preparo-ink:    #78350F;
+
+  --pronto:         #16A34A;
+  --pronto-bg:      #DCFCE7;
+  --pronto-ink:     #14532D;
+
+  /* ── Tamanhos — tudo em vh/vw para escalar com a TV ────────── */
+  --num-size:      10vh;   /* ~108px em 1080p — legível a 6m */
+  --name-size:     4.5vh;  /* ~48px */
+  --head-size:     3.2vh;  /* ~34px */
+  --card-gap:      1.6vh;
+  --col-gap:       1.2vw;
+  --col-pad:       1.5vh;
+  --card-pad:      2vh 2.2vh;
+
+  font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+* { box-sizing: border-box; }
+
+body.painel-tv {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.painel-header {
+  flex: 0 0 9vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2vw;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+  border-bottom: 1px solid var(--border);
+}
+.painel-header-left,
+.painel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.6vw;
+}
+.painel-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+  font-weight: 800;
+  font-size: 3vh;
+  letter-spacing: 0.02em;
+}
+.painel-logo-icon {
+  font-size: 4.2vh;
+  filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.35));
+}
+.painel-logo-texto {
+  font-size: 2.6vh;
+  color: var(--text);
+}
+.painel-clock {
+  font-size: 4.5vh;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+/* Badge de status de conexão */
+.painel-conn {
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+  padding: 0.8vh 1.4vh;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.16);
+  color: #86EFAC;
+  font-size: 1.8vh;
+  font-weight: 700;
+  transition: background .4s, color .4s;
+}
+.painel-conn-dot {
+  width: 1.2vh;
+  height: 1.2vh;
+  border-radius: 50%;
+  background: #22C55E;
+  box-shadow: 0 0 12px #22C55E;
+}
+.painel-conn[data-status="error"] {
+  background: rgba(225, 29, 72, 0.22);
+  color: #FCA5A5;
+  animation: connPulse 1.4s ease-in-out infinite;
+}
+.painel-conn[data-status="error"] .painel-conn-dot {
+  background: #EF4444;
+  box-shadow: 0 0 14px #EF4444;
+}
+
+/* ── Grid principal (3 colunas 1:1:1) ──────────────────────── */
+.painel-grid {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--col-gap);
+  padding: 2vh 2vw;
+  min-height: 0;
+}
+.painel-grid--vazio {
+  /* Quando não há cards, mantemos o grid mas o conteúdo é ocultado
+     via .painel-empty — ver abaixo. */
+}
+
+/* ── Coluna ─────────────────────────────────────────────────── */
+.painel-col {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  min-height: 0;
+}
+.painel-col-head {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2vh 2.2vh;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+.painel-col-head h2 {
+  margin: 0;
+  font-size: var(--head-size);
+}
+.painel-col-count {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 0.4vh 1.6vh;
+  border-radius: 999px;
+  min-width: 4vh;
+  text-align: center;
+  font-size: 2.6vh;
+  font-weight: 800;
+}
+.col-aguardando   .painel-col-head { background: var(--aguardando); }
+.col-em-preparo   .painel-col-head { background: var(--preparo); }
+.col-pronto       .painel-col-head { background: var(--pronto); }
+
+.painel-cards {
+  flex: 1 1 auto;
+  padding: var(--col-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+  overflow: hidden;
+  min-height: 0;
+}
+.painel-col-vazia {
+  color: var(--muted);
+  text-align: center;
+  padding: 4vh 2vh;
+  font-size: 2.2vh;
+  font-style: italic;
+  opacity: 0.5;
+}
+
+/* Paginação (dots) */
+.painel-col-pag {
+  display: flex;
+  gap: 0.8vh;
+  justify-content: center;
+  padding: 1vh;
+}
+.painel-col-pag-dot {
+  width: 1.2vh;
+  height: 1.2vh;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  transition: background .3s;
+}
+.painel-col-pag-dot.ativa {
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.painel-card {
+  border-radius: 18px;
+  padding: var(--card-pad);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: fadein .28s ease-out;
+}
+.painel-card-numero {
+  font-size: var(--num-size);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.painel-card-nome {
+  font-size: var(--name-size);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-top: 0.6vh;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.painel-card--pendente {
+  background: var(--aguardando-bg);
+  color: var(--aguardando-ink);
+}
+.painel-card--em_preparo {
+  background: var(--preparo-bg);
+  color: var(--preparo-ink);
+}
+.painel-card--pronto {
+  background: var(--pronto-bg);
+  color: var(--pronto-ink);
+  animation: fadein .28s ease-out, bounce 0.6s ease;
+}
+
+/* Flash especial: em_preparo → pronto (10s) */
+.painel-card.flash-pronto {
+  animation: fadein .28s ease-out, flash-pronto 1.1s ease-in-out infinite;
+}
+
+/* ── Estado vazio (sem pedidos) ─────────────────────────────── */
+.painel-empty {
+  position: absolute;
+  inset: 9vh 0 9vh 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.painel-empty-box {
+  text-align: center;
+  color: var(--text);
+  padding: 4vh 6vw;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.painel-empty-box h3 {
+  font-size: 7vh;
+  margin: 0 0 1vh;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+.painel-empty-box p {
+  font-size: 4vh;
+  color: var(--muted);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.painel-footer {
+  flex: 0 0 6vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vw;
+  font-size: 2.4vh;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.04em;
+}
+.painel-footer-sep { opacity: 0.5; }
+
+/* ── Animações ──────────────────────────────────────────────── */
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  30%      { transform: translateY(-1.6vh); }
+  60%      { transform: translateY(0.6vh); }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+  50%      { box-shadow: 0 0 0 2.5vh rgba(22, 163, 74, 0); }
+}
+
+@keyframes flash-pronto {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.8);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 2vh rgba(22, 163, 74, 0);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes connPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* ── Dev-only: avisar em telas pequenas ─────────────────────── */
+.painel-dev-warning { display: none; }
+@media (max-width: 900px) {
+  .painel-header, .painel-grid, .painel-footer, .painel-empty { display: none !important; }
+  .painel-dev-warning {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    padding: 24px;
+    text-align: center;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .painel-dev-warning p {
+    max-width: 360px;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}

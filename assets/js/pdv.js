@@ -236,17 +236,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       observacao: i.observacao || null,
     }));
 
+    // Nome do cliente para o Painel TV — opcional, máx 50 chars, trim e null se vazio
+    const inputNome = document.getElementById('pdv-cliente-nome');
+    const nomeBruto = (inputNome?.value || '').trim();
+    const clienteNome = nomeBruto ? nomeBruto.slice(0, 50) : null;
+
     App.setLoading(btnFinalizar, true);
     try {
       const { data, error } = await db.rpc('fechar_venda', {
         p_itens: itens,
-        p_operador_id: user?.id
+        p_operador_id: user?.id,
+        p_cliente_nome: clienteNome
       });
 
       if (error || data?.erro) throw new Error(data?.erro || error?.message || 'Erro ao finalizar venda.');
 
-      App.showToast(`Venda finalizada! Total: ${App.formatCurrency(data.total)}`);
+      const numeroPedido = data?.numero_pedido;
+      const msgNumero = numeroPedido ? ` — Pedido #${String(numeroPedido).padStart(3, '0')}` : '';
+      App.showToast(`Venda finalizada${msgNumero}! Total: ${App.formatCurrency(data.total)}`);
       carrinho = [];
+      if (inputNome) inputNome.value = '';
       renderCarrinho();
     } catch (err) {
       App.showToast(err?.message || 'Erro ao finalizar venda.', 'error');

@@ -1,5 +1,16 @@
+// Páginas públicas (não exigem sessão e não redirecionam para login).
+// - 'login':  tela de autenticação
+// - 'painel': Painel do Cliente exibido na TV (v1.2) — read-only, role anon
+const PUBLIC_PAGES = ['login', 'painel'];
+
 document.addEventListener('DOMContentLoaded', () => {
   const page = document.body.dataset.page;
+
+  // Whitelist de páginas públicas — o guard de sessão é completamente
+  // ignorado para permitir que a TV abra painel.html sem login.
+  if (PUBLIC_PAGES.includes(page) && page !== 'login') {
+    return;
+  }
 
   if (page !== 'login' && !App.isLoggedIn()) {
     window.location.replace('login.html');
