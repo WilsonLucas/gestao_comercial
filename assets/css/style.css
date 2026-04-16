@@ -149,6 +149,21 @@ th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color
 .badge.warning { background: rgba(212,136,6,.12); color: var(--warning); }
 .badge.danger { background: rgba(214,69,69,.12); color: var(--danger); }
 .table-row-critical { background: rgba(214,69,69,.05); }
+.table-row-inactive { opacity: 0.62; }
+.table-row-inactive td:first-child { font-style: italic; }
+
+/* Filtros inline no header do panel (ex: ingredientes ativo/inativo) */
+.panel-filters { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.inline-filter { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+.inline-filter select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+}
 .chart-wrapper { position: relative; min-height: 320px; }
 .large-chart { min-height: 380px; }
 .toast-container {

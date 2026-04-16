@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: alertas } = await db
       .from('ingredientes')
       .select('nome, estoque_atual, estoque_minimo, unidade')
+      .eq('ativo', true)
       .order('nome');
 
     const criticos = (alertas || []).filter((i) => {

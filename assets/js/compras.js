@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   async function carregarIngredientes() {
-    const { data } = await db.from('ingredientes').select('id, nome, unidade').order('nome');
+    const { data } = await db.from('ingredientes').select('id, nome, unidade').eq('ativo', true).order('nome');
     ingredientesCache = data || [];
     if (ingredienteSelect) {
       ingredienteSelect.innerHTML = '<option value="">Selecione...</option>' +

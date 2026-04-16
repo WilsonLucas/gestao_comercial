@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function renderTable() {
     const tbody = document.getElementById('lista-compras-body');
-    const { data: lista, error } = await db.from('ingredientes').select('id, nome, unidade, estoque_atual, estoque_minimo, preco_compra').order('nome');
+    const { data: lista, error } = await db.from('ingredientes').select('id, nome, unidade, estoque_atual, estoque_minimo, preco_compra').eq('ativo', true).order('nome');
 
     if (error) {
       tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Erro ao carregar lista de compras.</td></tr>';

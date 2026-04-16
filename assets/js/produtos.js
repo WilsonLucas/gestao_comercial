@@ -7,8 +7,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let listaCache = [];
 
   // ── Ingredientes ───────────────────────────────────────────────
+  // Cache alimenta o dropdown "adicionar ingrediente a ficha tecnica" — so ativos.
+  // Ingredientes inativos ja vinculados em fichas existentes continuam aparecendo
+  // via JOIN no carregamento do produto (select ficha_tecnica.ingredientes(...)),
+  // que nao filtra por ativo — preservando historico.
   async function carregarIngredientes() {
-    const { data } = await db.from('ingredientes').select('id, nome, unidade').order('nome');
+    const { data } = await db.from('ingredientes').select('id, nome, unidade').eq('ativo', true).order('nome');
     ingredientesCache = data || [];
   }
 

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const idInput = document.getElementById('ingrediente-id');
   const overlay = document.getElementById('ingrediente-modal-overlay');
   const modalTitulo = document.getElementById('modal-titulo-ingrediente');
+  const filtroAtivoSelect = document.getElementById('filtro-ingrediente-ativo');
 
   function abrirModal(titulo = 'Novo ingrediente') {
     modalTitulo.textContent = titulo;
@@ -28,32 +29,46 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cancelar-edicao-ingrediente')?.addEventListener('click', fecharModal);
   overlay?.addEventListener('click', (e) => { if (e.target === overlay) fecharModal(); });
 
+  filtroAtivoSelect?.addEventListener('change', renderTable);
+
   async function renderTable() {
     const tbody = document.getElementById('ingredientes-body');
+    const filtro = filtroAtivoSelect?.value || 'ativos';
     try {
-      const { data: lista, error } = await db.from('ingredientes').select('*').order('nome');
+      let query = db.from('ingredientes').select('*').order('nome');
+      if (filtro === 'ativos')   query = query.eq('ativo', true);
+      if (filtro === 'inativos') query = query.eq('ativo', false);
+
+      const { data: lista, error } = await query;
       if (error) throw error;
       tbody.innerHTML = lista.length ? lista.map((item) => {
         const status = App.calcularStatus(item);
+        const situacao = item.ativo
+          ? '<span class="badge normal">Ativo</span>'
+          : '<span class="badge danger">Inativo</span>';
+        const botaoEstado = item.ativo
+          ? `<button class="btn btn-danger" data-inativar="${item.id}">Inativar</button>`
+          : `<button class="btn btn-secondary" data-reativar="${item.id}">Reativar</button>`;
         return `
-          <tr class="${status.status === 'critico' ? 'table-row-critical' : ''}">
+          <tr class="${status.status === 'critico' && item.ativo ? 'table-row-critical' : ''} ${!item.ativo ? 'table-row-inactive' : ''}">
             <td>${App.escapeHtml(item.nome)}</td>
             <td>${App.escapeHtml(item.unidade)}</td>
             <td>${parseFloat(Number(item.estoque_atual).toFixed(3))}</td>
             <td>${parseFloat(Number(item.estoque_minimo).toFixed(3))}</td>
             <td>${App.formatCurrency(item.preco_compra)}</td>
             <td><span class="badge ${status.className}">${status.label}</span></td>
+            <td>${situacao}</td>
             <td>
               <div class="actions">
                 <button class="btn btn-secondary" data-edit="${item.id}">Editar</button>
-                <button class="btn btn-danger" data-delete="${item.id}">Excluir</button>
+                ${botaoEstado}
               </div>
             </td>
           </tr>
         `;
-      }).join('') : '<tr><td colspan="7" class="empty-state">Nenhum ingrediente cadastrado.</td></tr>';
+      }).join('') : '<tr><td colspan="8" class="empty-state">Nenhum ingrediente encontrado com este filtro.</td></tr>';
     } catch (err) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Erro ao carregar ingredientes.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Erro ao carregar ingredientes.</td></tr>';
       App.showToast('Erro ao carregar ingredientes.', 'error');
     }
   }
@@ -87,8 +102,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('ingredientes-body')?.addEventListener('click', async (event) => {
-    const editId = event.target.dataset.edit;
-    const deleteId = event.target.dataset.delete;
+    const editId     = event.target.dataset.edit;
+    const inativarId = event.target.dataset.inativar;
+    const reativarId = event.target.dataset.reativar;
 
     if (editId) {
       try {
@@ -106,17 +122,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    if (deleteId) {
-      const confirmado = await App.confirmar('Excluir este ingrediente? Esta acao nao pode ser desfeita.');
+    if (inativarId) {
+      const confirmado = await App.confirmar('Inativar este ingrediente? Ele deixara de aparecer no PDV, nas fichas tecnicas novas, na lista de compras e nos alertas. O historico de vendas e compras e preservado. Voce pode reativa-lo depois.');
       if (!confirmado) return;
       App.setLoading(event.target, true);
       try {
-        const { error } = await db.from('ingredientes').delete().eq('id', deleteId);
+        const { error } = await db.from('ingredientes').update({ ativo: false }).eq('id', inativarId);
         if (error) throw error;
-        App.showToast('Ingrediente excluido com sucesso.', 'warning');
+        App.showToast('Ingrediente inativado.', 'warning');
         renderTable();
       } catch (err) {
-        App.showToast(err?.message || 'Erro ao excluir ingrediente.', 'error');
+        App.showToast(err?.message || 'Erro ao inativar ingrediente.', 'error');
+        App.setLoading(event.target, false);
+      }
+    }
+
+    if (reativarId) {
+      const confirmado = await App.confirmar('Reativar este ingrediente? Ele voltara a aparecer nas listas de selecao.');
+      if (!confirmado) return;
+      App.setLoading(event.target, true);
+      try {
+        const { error } = await db.from('ingredientes').update({ ativo: true }).eq('id', reativarId);
+        if (error) throw error;
+        App.showToast('Ingrediente reativado.', 'success');
+        renderTable();
+      } catch (err) {
+        App.showToast(err?.message || 'Erro ao reativar ingrediente.', 'error');
         App.setLoading(event.target, false);
       }
     }
