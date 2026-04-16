@@ -6,7 +6,8 @@
 //
 // Recursos:
 //   - Polling 5s com fallback para snapshot localStorage (até 5min)
-//   - Remove cards 'pronto' 60s após pronto_em
+//   - Coluna PRONTO mantém no máximo MAX_PRONTO_VISIBLE cards (FIFO
+//     pelo pronto_em) — cards 'entregue' somem via RPC marcar_entregue
 //   - Animação .flash-pronto por 10s ao transitar em_preparo → pronto
 //   - Paginação automática quando coluna tem mais que MAX_POR_PAGINA cards
 //   - Relógio atualizado a cada segundo
@@ -18,13 +19,13 @@
   'use strict';
 
   // ── Constantes ─────────────────────────────────────────────────
-  const POLL_MS          = 5000;          // intervalo de polling
-  const PRONTO_TTL_MS    = 60_000;        // card 'pronto' some 60s após virar pronto
-  const CONN_ERROR_MS    = 15_000;        // threshold para marcar conexão como ruim
-  const SNAPSHOT_MAX_AGE = 5 * 60_000;    // snapshot localStorage válido por 5min
-  const FLASH_MS         = 10_000;        // duração do flash em PRONTO
-  const MAX_POR_PAGINA   = 4;             // paginação quando >4 cards/coluna
-  const PAGINA_INTERVAL  = 8000;          // troca de página a cada 8s
+  const POLL_MS            = 5000;          // intervalo de polling
+  const MAX_PRONTO_VISIBLE = 3;             // máximo de cards na coluna PRONTO (FIFO)
+  const CONN_ERROR_MS      = 15_000;        // threshold para marcar conexão como ruim
+  const SNAPSHOT_MAX_AGE   = 5 * 60_000;    // snapshot localStorage válido por 5min
+  const FLASH_MS           = 10_000;        // duração do flash em PRONTO
+  const MAX_POR_PAGINA     = 4;             // paginação quando >4 cards/coluna
+  const PAGINA_INTERVAL    = 8000;          // troca de página a cada 8s
 
   const COLUNAS = {
     pendente:   { elId: 'col-pendente',   countId: 'count-pendente',   pagId: 'pag-pendente'   },
@@ -106,15 +107,24 @@
     `;
   }
 
-  // ── Filtro: card 'pronto' some 60s após pronto_em ─────────────
+  // ── Filtro: coluna PRONTO limitada a MAX_PRONTO_VISIBLE (FIFO) ──
+  // Pedidos entregues saem via RPC marcar_entregue (backoffice). Até lá,
+  // ficam visíveis para o cliente. Se acumular mais que o limite, os
+  // mais antigos (por pronto_em) saem primeiro — presumindo que o cliente
+  // já retirou. Para pendente e em_preparo não há limite.
   function filtrarVisiveis(lista) {
-    const now = Date.now();
-    return lista.filter((v) => {
-      if (v.status !== 'pronto') return true;
-      if (!v.pronto_em) return true; // segurança — mantém se timestamp ausente
-      const prontoTs = new Date(v.pronto_em).getTime();
-      return (now - prontoTs) < PRONTO_TTL_MS;
-    });
+    const outros = lista.filter((v) => v.status !== 'pronto');
+    const prontos = lista
+      .filter((v) => v.status === 'pronto')
+      .sort((a, b) => {
+        // Mais recente primeiro (pronto_em DESC); itens sem pronto_em
+        // vão para o fim para serem os primeiros a cair.
+        const ta = a.pronto_em ? new Date(a.pronto_em).getTime() : 0;
+        const tb = b.pronto_em ? new Date(b.pronto_em).getTime() : 0;
+        return tb - ta;
+      })
+      .slice(0, MAX_PRONTO_VISIBLE);
+    return outros.concat(prontos);
   }
 
   // ── Detecta transição em_preparo → pronto → aciona flash ─────
@@ -231,15 +241,6 @@
     }
   }
 
-  // ── Re-render leve (sem refetch) para atualizar TTL dos 'pronto' ──
-  // Isto garante que um card 'pronto' que já passou dos 60s desaparece
-  // mesmo entre polls (assim não precisamos esperar 5s).
-  function rerenderComSnapshot() {
-    const snapshot = lerSnapshot();
-    if (!snapshot.length) return;
-    render(filtrarVisiveis(snapshot));
-  }
-
   // ── Bootstrap ──────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     if (document.body.dataset.page !== 'painel') return;
@@ -253,7 +254,6 @@
 
     fetchPainel();
     setInterval(fetchPainel,       POLL_MS);
-    setInterval(rerenderComSnapshot, 2000);         // varre TTL de PRONTO em 2s
     setInterval(avancarPaginacao,  PAGINA_INTERVAL); // rotação de páginas
   });
 })();
