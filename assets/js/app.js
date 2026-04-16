@@ -7,6 +7,7 @@ const MENU_POR_PERFIL = {
     ['compras',       'Compras',          'compras.html'],
     ['pdv',           'PDV',              'pdv.html'],
     ['cozinha',       'Cozinha',          'cozinha.html'],
+    ['painel',        'Painel TV',        'painel.html',         '_blank'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
@@ -22,6 +23,7 @@ const MENU_POR_PERFIL = {
     ['inicio',        'Inicio',           'inicio.html'],
     ['pdv',           'PDV',              'pdv.html'],
     ['cozinha',       'Cozinha',          'cozinha.html'],
+    ['painel',        'Painel TV',        'painel.html',         '_blank'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
 };
@@ -161,7 +163,10 @@ const App = (() => {
           ${logoHtml}
         </div>
         <nav class="sidebar-nav">
-          ${menu.map(([key, label, href]) => `<a class="nav-link ${page === key ? 'active' : ''}" href="${escapeHtml(href)}"><span>${escapeHtml(label)}</span></a>`).join('')}
+          ${menu.map(([key, label, href, target]) => {
+            const targetAttr = target ? ` target="${escapeHtml(target)}" rel="noopener"` : '';
+            return `<a class="nav-link ${page === key ? 'active' : ''}" href="${escapeHtml(href)}"${targetAttr}><span>${escapeHtml(label)}</span></a>`;
+          }).join('')}
         </nav>
       `;
     }

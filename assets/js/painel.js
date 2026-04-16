@@ -176,17 +176,6 @@
       arr.sort((a, b) => (a.numero_pedido || 0) - (b.numero_pedido || 0));
     });
 
-    const totalCards = porStatus.pendente.length + porStatus.em_preparo.length + porStatus.pronto.length;
-    const emptyEl = document.getElementById('painel-empty');
-    const gridEl  = document.getElementById('painel-grid');
-    if (totalCards === 0) {
-      if (emptyEl) emptyEl.hidden = false;
-      if (gridEl)  gridEl.classList.add('painel-grid--vazio');
-    } else {
-      if (emptyEl) emptyEl.hidden = true;
-      if (gridEl)  gridEl.classList.remove('painel-grid--vazio');
-    }
-
     Object.entries(COLUNAS).forEach(([status, cfg]) => {
       const cardsEl = document.getElementById(cfg.elId);
       const countEl = document.getElementById(cfg.countId);
