@@ -213,7 +213,7 @@ body.painel-tv {
   align-items: center;
   justify-content: center;
   text-align: center;
-  animation: fadein .28s ease-out;
+  transition: background-color .6s ease, color .6s ease;
 }
 .painel-card-numero {
   font-size: var(--num-size);
@@ -244,12 +244,11 @@ body.painel-tv {
 .painel-card--pronto {
   background: var(--pronto-bg);
   color: var(--pronto-ink);
-  animation: fadein .28s ease-out, bounce 0.6s ease;
 }
 
-/* Flash especial: em_preparo → pronto (10s) */
+/* Flash especial: em_preparo → pronto (aplicado por JS, dura 10s) */
 .painel-card.flash-pronto {
-  animation: fadein .28s ease-out, flash-pronto 1.1s ease-in-out infinite;
+  animation: flash-pronto 2.8s ease-in-out infinite;
 }
 
 /* ── Footer ─────────────────────────────────────────────────── */
@@ -267,30 +266,14 @@ body.painel-tv {
 .painel-footer-sep { opacity: 0.5; }
 
 /* ── Animações ──────────────────────────────────────────────── */
-@keyframes fadein {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  30%      { transform: translateY(-1.6vh); }
-  60%      { transform: translateY(0.6vh); }
-}
-
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
-  50%      { box-shadow: 0 0 0 2.5vh rgba(22, 163, 74, 0); }
-}
-
+/* Apenas o flash de transição em_preparo → pronto é animado.
+   Cards NÃO são animados em cada polling para não "piscar" a cada 5s. */
 @keyframes flash-pronto {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.8);
-    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 2vh rgba(22, 163, 74, 0);
-    transform: scale(1.03);
+    box-shadow: 0 0 0 1.6vh rgba(22, 163, 74, 0);
   }
 }
 
