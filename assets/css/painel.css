@@ -256,10 +256,55 @@ body.painel-tv {
 .painel-cards.split-2col .painel-card-numero  { font-size: var(--num-size-split); }
 .painel-cards.split-2col .painel-card-nome    { font-size: var(--name-size-split); }
 
-/* Flash especial: transição (pendente|em_preparo) → pronto — dura 10s */
-.painel-card.flash-pronto {
-  animation: flash-pronto 2.4s ease-in-out infinite;
-  z-index: 1;
+/* ── Overlay fullscreen: takeover ao virar "pronto" ──────────── */
+.painel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: linear-gradient(160deg, #15803d 0%, #16A34A 50%, #166534 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vh 4vw;
+  text-align: center;
+  animation: overlayEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.painel-overlay[hidden] { display: none; }
+.painel-overlay.exiting { animation: overlayExit 0.4s ease-in forwards; }
+
+.painel-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vh;
+  max-width: 92vw;
+}
+.painel-overlay-label {
+  font-size: 7vh;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+  line-height: 1;
+}
+.painel-overlay-numero {
+  font-size: 11vh;
+  font-weight: 800;
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.painel-overlay-nome {
+  font-size: 26vh;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
 /* ── Footer ─────────────────────────────────────────────────── */
@@ -277,18 +322,17 @@ body.painel-tv {
 .painel-footer-sep { opacity: 0.5; }
 
 /* ── Animações ──────────────────────────────────────────────── */
-/* Apenas o flash de transição (pendente|em_preparo) → pronto é animado.
-   Cards NÃO são animados em cada polling para não "piscar" a cada 5s.
-   Versão v1.3: ring maior + scale leve — destaque reforçado. */
-@keyframes flash-pronto {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.95);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 2.4vh rgba(22, 163, 74, 0);
-    transform: scale(1.035);
-  }
+/* Cards NÃO são animados em cada polling para não "piscar" a cada 5s.
+   O destaque do pedido recém-pronto é feito pelo overlay fullscreen,
+   não mais por flash no próprio card. */
+@keyframes overlayEnter {
+  0%   { opacity: 0; transform: scale(0.92); }
+  60%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes overlayExit {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.96); }
 }
 
 @keyframes connPulse {

@@ -10,14 +10,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap">
 
-  <link rel="stylesheet" href="assets/css/painel.css?v=1.4.1">
+  <link rel="stylesheet" href="assets/css/painel.css?v=1.5">
 </head>
 <!--
-  Painel Pedidos — v1.3
+  Painel Pedidos — v1.5
   Página PÚBLICA, read-only, sem autenticação (data-page="painel").
   Carrega apenas supabase-client.js + painel.js — NÃO carrega auth.js,
   app.js nem config.js. Polling 5s em painel_cliente_view.
-  Layout: 2 colunas (EM PREPARO unifica pendente+em_preparo | PRONTO).
+  Layout: 2 colunas (EM PREPARO 2x7 | PRONTO cap 5).
+  Transição para "pronto" dispara overlay fullscreen por ~4s.
 -->
 <body data-page="painel" class="painel-tv">
 
@@ -59,6 +60,15 @@
     <span>Aguarde ser chamado</span>
   </footer>
 
+  <!-- Overlay fullscreen: disparado quando um pedido vira "pronto" -->
+  <div class="painel-overlay" id="painel-overlay" hidden aria-hidden="true">
+    <div class="painel-overlay-content">
+      <div class="painel-overlay-label">PRONTO</div>
+      <div class="painel-overlay-numero" id="overlay-numero">#000</div>
+      <div class="painel-overlay-nome" id="overlay-nome">Cliente</div>
+    </div>
+  </div>
+
   <!-- Aviso apenas para quem abrir em tela pequena durante dev -->
   <div class="painel-dev-warning">
     <p><strong>Painel Pedidos.</strong> Esta página foi desenhada para TVs 1080p em modo paisagem. Abra em kiosk fullscreen.</p>
@@ -66,6 +76,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
-  <script src="assets/js/painel.js?v=1.4.1"></script>
+  <script src="assets/js/painel.js?v=1.5"></script>
 </body>
 </html>

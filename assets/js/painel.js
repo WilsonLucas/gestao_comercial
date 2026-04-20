@@ -4,13 +4,14 @@
 // Página pública: lê painel_cliente_view via role anon a cada 5s.
 // Nunca faz UPDATE/INSERT/DELETE — somente SELECT.
 //
-// Layout v1.4:
+// Layout v1.5:
 //   - 2 colunas: EM PREPARO (pendente+em_preparo) | PRONTO
 //   - EM PREPARO sempre em 2 sub-colunas × 7 linhas (14 cards visíveis)
 //     Paginação a cada 8s quando houver >14 pedidos em preparo
 //   - PRONTO cap em MAX_PRONTO=5 (FIFO — mantém os mais recentes)
 //     Fonte menor para dar evidência a EM PREPARO
-//   - Animação .flash-pronto por FLASH_MS na transição (pendente|em_preparo) → pronto
+//   - Transição (pendente|em_preparo) → pronto dispara overlay fullscreen
+//     por OVERLAY_SHOW_MS (sem flash no card). Fila sequencial se múltiplos.
 //   - Relógio atualizado a cada segundo
 //   - Badge de conexão (verde OK, vermelho pulsante se >15s sem sucesso)
 //   - escapeHtml em cliente_nome (dado de usuário)
@@ -23,11 +24,12 @@
   const POLL_MS          = 5000;          // intervalo de polling
   const CONN_ERROR_MS    = 15_000;        // threshold para marcar conexão como ruim
   const SNAPSHOT_MAX_AGE = 5 * 60_000;    // snapshot localStorage válido por 5min
-  const FLASH_MS         = 10_000;        // duração do flash em PRONTO
   const MAX_EM_PREPARO   = 14;            // 2 sub-colunas × 7 linhas
   const PAGINA_INTERVAL  = 8000;          // troca de página a cada 8s (quando >14)
   const MAX_PRONTO       = 5;             // cap FIFO — últimos 5 prontos
   const NAME_MIN_VH      = 2.8;           // piso do shrink-to-fit do nome (legível a 6m)
+  const OVERLAY_SHOW_MS  = 4000;          // duração do overlay fullscreen
+  const OVERLAY_EXIT_MS  = 400;           // duração da animação de saída (sincronizar com CSS)
 
   const COLUNAS = {
     em_preparo: { elId: 'col-em-preparo', countId: 'count-em-preparo', pagId: 'pag-em-preparo' },
@@ -45,8 +47,10 @@
   let lastOk           = Date.now();
   let lastLista        = [];
   let previousStatuses = new Map();
-  const flashUntil     = new Map();
   const paginaAtual    = { em_preparo: 0 };
+  const overlayQueue   = [];
+  const overlayIdsJaExibidos = new Set(); // evita reexibir mesmo pedido após reload/polling
+  let   overlayAtivo   = false;
 
   // ── Utilidades ─────────────────────────────────────────────────
   function escapeHtml(str) {
@@ -106,50 +110,95 @@
 
   // ── Render de um card ──────────────────────────────────────────
   function renderCard(venda) {
-    const flashAtivo = flashUntil.has(venda.id) && flashUntil.get(venda.id) > Date.now();
-    const flashCls   = flashAtivo ? ' flash-pronto' : '';
-    const coluna     = colunaDeStatus(venda.status) || 'em_preparo';
+    const coluna = colunaDeStatus(venda.status) || 'em_preparo';
     return `
-      <article class="painel-card painel-card--${coluna}${flashCls}" data-id="${escapeHtml(venda.id)}">
+      <article class="painel-card painel-card--${coluna}" data-id="${escapeHtml(venda.id)}">
         <span class="painel-card-numero">${formatarNumero(venda.numero_pedido)}</span>
         <span class="painel-card-nome">${escapeHtml(venda.cliente_nome || 'Cliente')}</span>
       </article>
     `;
   }
 
-  // ── Detecta transição (pendente|em_preparo) → pronto → flash ──
-  function detectarFlash(lista) {
+  // ── Detecta transição (pendente|em_preparo) → pronto → enfileira overlay ──
+  // Não dispara no primeiro render (previousStatuses vazio) — evita
+  // que a tela fique com overlay ao dar refresh com pedidos já prontos.
+  function detectarTransicoes(lista) {
     lista.forEach((v) => {
       const statusAnterior = previousStatuses.get(v.id);
-      if (statusAnterior && statusAnterior !== 'pronto' && v.status === 'pronto') {
-        flashUntil.set(v.id, Date.now() + FLASH_MS);
+      if (
+        statusAnterior &&
+        statusAnterior !== 'pronto' &&
+        v.status === 'pronto' &&
+        !overlayIdsJaExibidos.has(v.id)
+      ) {
+        overlayQueue.push({ id: v.id, numero: v.numero_pedido, nome: v.cliente_nome });
+        overlayIdsJaExibidos.add(v.id);
+        processarOverlayQueue();
       }
     });
     const idsAtuais = new Set(lista.map((v) => v.id));
     for (const id of previousStatuses.keys()) {
       if (!idsAtuais.has(id)) previousStatuses.delete(id);
     }
-    for (const id of flashUntil.keys()) {
-      if (flashUntil.get(id) <= Date.now() || !idsAtuais.has(id)) flashUntil.delete(id);
+    // Limpa set de overlays já exibidos quando o pedido saiu (foi entregue)
+    for (const id of overlayIdsJaExibidos) {
+      if (!idsAtuais.has(id)) overlayIdsJaExibidos.delete(id);
     }
     previousStatuses = new Map(lista.map((v) => [v.id, v.status]));
   }
 
-  // ── Shrink-to-fit do nome por card (preserva grid uniforme) ───
-  // Mede scrollWidth vs clientWidth após o render e reduz font-size
-  // proporcionalmente quando o nome estoura. Piso em NAME_MIN_VH.
+  // ── Overlay fullscreen — fila sequencial ──────────────────────
+  function processarOverlayQueue() {
+    if (overlayAtivo || overlayQueue.length === 0) return;
+    mostrarOverlay(overlayQueue.shift());
+  }
+
+  function mostrarOverlay({ numero, nome }) {
+    const el    = document.getElementById('painel-overlay');
+    const elNum = document.getElementById('overlay-numero');
+    const elNom = document.getElementById('overlay-nome');
+    if (!el || !elNum || !elNom) return;
+
+    overlayAtivo = true;
+    elNum.textContent = formatarNumero(numero);
+    elNom.textContent = nome || 'Cliente';
+    el.classList.remove('exiting');
+    el.hidden = false;
+    el.setAttribute('aria-hidden', 'false');
+
+    // Ajusta fonte do nome no overlay para caber (nomes longos)
+    requestAnimationFrame(() => ajustarFonte(elNom, 12));
+
+    setTimeout(() => {
+      el.classList.add('exiting');
+      setTimeout(() => {
+        el.hidden = true;
+        el.setAttribute('aria-hidden', 'true');
+        el.classList.remove('exiting');
+        overlayAtivo = false;
+        processarOverlayQueue();
+      }, OVERLAY_EXIT_MS);
+    }, OVERLAY_SHOW_MS);
+  }
+
+  // ── Shrink-to-fit de texto em um elemento ─────────────────────
+  // Mede scrollWidth vs clientWidth e reduz font-size proporcionalmente
+  // quando o texto estoura. Piso em minVh (vh). Preserva largura do container.
+  function ajustarFonte(el, minVh) {
+    if (!el) return;
+    el.style.fontSize = ''; // reset para o default do CSS antes de medir
+    const scrollW = el.scrollWidth;
+    const clientW = el.clientWidth;
+    if (scrollW <= clientW || clientW === 0) return;
+    const basePx = parseFloat(getComputedStyle(el).fontSize);
+    const minPx  = (minVh / 100) * window.innerHeight;
+    const ratio  = clientW / scrollW;
+    const newPx  = Math.max(minPx, basePx * ratio * 0.97); // margem 3%
+    el.style.fontSize = newPx + 'px';
+  }
+
   function ajustarFonteNomes() {
-    const minPx = (NAME_MIN_VH / 100) * window.innerHeight;
-    document.querySelectorAll('.painel-card-nome').forEach((el) => {
-      el.style.fontSize = ''; // reset para o default do CSS antes de medir
-      const scrollW = el.scrollWidth;
-      const clientW = el.clientWidth;
-      if (scrollW <= clientW || clientW === 0) return;
-      const basePx = parseFloat(getComputedStyle(el).fontSize);
-      const ratio  = clientW / scrollW;
-      const newPx  = Math.max(minPx, basePx * ratio * 0.97); // margem 3%
-      el.style.fontSize = newPx + 'px';
-    });
+    document.querySelectorAll('.painel-card-nome').forEach((el) => ajustarFonte(el, NAME_MIN_VH));
   }
 
   // ── Paginação de EM PREPARO quando total > MAX_EM_PREPARO ─────
@@ -169,7 +218,7 @@
 
   // ── Render principal ───────────────────────────────────────────
   function render(lista) {
-    detectarFlash(lista);
+    detectarTransicoes(lista);
 
     const porColuna = { em_preparo: [], pronto: [] };
     lista.forEach((v) => {
