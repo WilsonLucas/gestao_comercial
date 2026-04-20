@@ -4,9 +4,10 @@
 // Página pública: lê painel_cliente_view via role anon a cada 5s.
 // Nunca faz UPDATE/INSERT/DELETE — somente SELECT.
 //
-// Layout v1.5:
+// Layout v1.5.1:
 //   - 2 colunas: EM PREPARO (pendente+em_preparo) | PRONTO
-//   - EM PREPARO sempre em 2 sub-colunas × 7 linhas (14 cards visíveis)
+//   - EM PREPARO com <8 cards: coluna única (cards full-width, fonte maior)
+//   - EM PREPARO com >=8 cards: 2 sub-colunas × 7 linhas (até 14 visíveis)
 //     Paginação a cada 8s quando houver >14 pedidos em preparo
 //   - PRONTO cap em MAX_PRONTO=5 (FIFO — mantém os mais recentes)
 //     Fonte menor para dar evidência a EM PREPARO
@@ -30,6 +31,7 @@
   const NAME_MIN_VH      = 2.8;           // piso do shrink-to-fit do nome (legível a 6m)
   const OVERLAY_SHOW_MS  = 4000;          // duração do overlay fullscreen
   const OVERLAY_EXIT_MS  = 400;           // duração da animação de saída (sincronizar com CSS)
+  const SPLIT_THRESHOLD  = 8;             // EM PREPARO vira 2 sub-colunas a partir deste total
 
   const COLUNAS = {
     em_preparo: { elId: 'col-em-preparo', countId: 'count-em-preparo', pagId: 'pag-em-preparo' },
@@ -258,8 +260,10 @@
         : '<div class="painel-col-vazia">—</div>';
       if (countEl) countEl.textContent = totalCompleto;
 
-      // EM PREPARO sempre em 2 sub-colunas; PRONTO sempre coluna única
-      cardsEl.classList.toggle('split-2col', coluna === 'em_preparo');
+      // EM PREPARO: split-2col só a partir de SPLIT_THRESHOLD cards visíveis.
+      // Abaixo disso, mantém coluna única (cards full-width com fonte maior).
+      const deveSplit = coluna === 'em_preparo' && arr.length >= SPLIT_THRESHOLD;
+      cardsEl.classList.toggle('split-2col', deveSplit);
 
       if (coluna === 'em_preparo') renderPaginacao(pagEl, porColuna.em_preparo.length);
     });
