@@ -4,13 +4,13 @@
 // Página pública: lê painel_cliente_view via role anon a cada 5s.
 // Nunca faz UPDATE/INSERT/DELETE — somente SELECT.
 //
-// Layout v1.3:
-//   - 2 colunas: EM PREPARO (unifica status pendente + em_preparo) | PRONTO
-//   - PRONTO sem cap — pedido fica até ser marcado como entregue via RPC
-//     marcar_entregue (executada na página Cozinha)
-//   - PRONTO quebra em 2 sub-colunas lado a lado quando total >= MAX_ANTES_SPLIT
+// Layout v1.4:
+//   - 2 colunas: EM PREPARO (pendente+em_preparo) | PRONTO
+//   - EM PREPARO sempre em 2 sub-colunas × 7 linhas (14 cards visíveis)
+//     Paginação a cada 8s quando houver >14 pedidos em preparo
+//   - PRONTO cap em MAX_PRONTO=5 (FIFO — mantém os mais recentes)
+//     Fonte menor para dar evidência a EM PREPARO
 //   - Animação .flash-pronto por FLASH_MS na transição (pendente|em_preparo) → pronto
-//   - Paginação preservada apenas em EM PREPARO quando >MAX_POR_PAGINA
 //   - Relógio atualizado a cada segundo
 //   - Badge de conexão (verde OK, vermelho pulsante se >15s sem sucesso)
 //   - escapeHtml em cliente_nome (dado de usuário)
@@ -24,9 +24,9 @@
   const CONN_ERROR_MS    = 15_000;        // threshold para marcar conexão como ruim
   const SNAPSHOT_MAX_AGE = 5 * 60_000;    // snapshot localStorage válido por 5min
   const FLASH_MS         = 10_000;        // duração do flash em PRONTO
-  const MAX_POR_PAGINA   = 4;             // paginação EM PREPARO quando >4 cards
-  const PAGINA_INTERVAL  = 8000;          // troca de página a cada 8s
-  const MAX_ANTES_SPLIT  = 5;             // PRONTO quebra em 2 sub-colunas quando >=5
+  const MAX_EM_PREPARO   = 14;            // 2 sub-colunas × 7 linhas
+  const PAGINA_INTERVAL  = 8000;          // troca de página a cada 8s (quando >14)
+  const MAX_PRONTO       = 5;             // cap FIFO — últimos 5 prontos
 
   const COLUNAS = {
     em_preparo: { elId: 'col-em-preparo', countId: 'count-em-preparo', pagId: 'pag-em-preparo' },
@@ -42,6 +42,7 @@
 
   // ── Estado ─────────────────────────────────────────────────────
   let lastOk           = Date.now();
+  let lastLista        = [];
   let previousStatuses = new Map();
   const flashUntil     = new Map();
   const paginaAtual    = { em_preparo: 0 };
@@ -133,37 +134,19 @@
     previousStatuses = new Map(lista.map((v) => [v.id, v.status]));
   }
 
-  // ── Paginação automática (apenas EM PREPARO) ──────────────────
-  function aplicarPaginacaoEmPreparo(cardsEl, pagEl, total) {
-    const totalPaginas = Math.max(1, Math.ceil(total / MAX_POR_PAGINA));
+  // ── Paginação de EM PREPARO quando total > MAX_EM_PREPARO ─────
+  function renderPaginacao(pagEl, totalCompleto) {
+    if (!pagEl) return;
+    const totalPaginas = Math.max(1, Math.ceil(totalCompleto / MAX_EM_PREPARO));
     if (totalPaginas <= 1) {
-      if (pagEl) pagEl.hidden = true;
-      if (cardsEl) {
-        const all = cardsEl.querySelectorAll('.painel-card');
-        all.forEach((c) => { c.style.display = ''; });
-      }
+      pagEl.hidden = true;
       paginaAtual.em_preparo = 0;
       return;
     }
-    if (paginaAtual.em_preparo >= totalPaginas) paginaAtual.em_preparo = 0;
-    const inicio = paginaAtual.em_preparo * MAX_POR_PAGINA;
-    const fim    = inicio + MAX_POR_PAGINA;
-    const all    = cardsEl.querySelectorAll('.painel-card');
-    all.forEach((c, i) => { c.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
-    if (pagEl) {
-      pagEl.hidden = false;
-      pagEl.innerHTML = Array.from({ length: totalPaginas }, (_, i) =>
-        `<span class="painel-col-pag-dot${i === paginaAtual.em_preparo ? ' ativa' : ''}"></span>`
-      ).join('');
-    }
-  }
-
-  // ── Layout da coluna PRONTO (split-2col quando >=MAX_ANTES_SPLIT) ─
-  function aplicarLayoutPronto(cardsEl, total) {
-    if (!cardsEl) return;
-    cardsEl.classList.toggle('split-2col', total >= MAX_ANTES_SPLIT);
-    const all = cardsEl.querySelectorAll('.painel-card');
-    all.forEach((c) => { c.style.display = ''; });
+    pagEl.hidden = false;
+    pagEl.innerHTML = Array.from({ length: totalPaginas }, (_, i) =>
+      `<span class="painel-col-pag-dot${i === paginaAtual.em_preparo ? ' ativa' : ''}"></span>`
+    ).join('');
   }
 
   // ── Render principal ───────────────────────────────────────────
@@ -181,37 +164,49 @@
       arr.sort((a, b) => (a.numero_pedido || 0) - (b.numero_pedido || 0));
     });
 
+    // Cap PRONTO: mantém apenas os últimos MAX_PRONTO (mais recentes)
+    const prontoCompleto = porColuna.pronto;
+    if (prontoCompleto.length > MAX_PRONTO) {
+      porColuna.pronto = prontoCompleto.slice(-MAX_PRONTO);
+    }
+
     Object.entries(COLUNAS).forEach(([coluna, cfg]) => {
       const cardsEl = document.getElementById(cfg.elId);
       const countEl = document.getElementById(cfg.countId);
       const pagEl   = cfg.pagId ? document.getElementById(cfg.pagId) : null;
       if (!cardsEl) return;
 
-      const arr = porColuna[coluna];
+      let arr = porColuna[coluna];
+      const totalCompleto = coluna === 'pronto' ? prontoCompleto.length : arr.length;
+
+      if (coluna === 'em_preparo' && arr.length > MAX_EM_PREPARO) {
+        const totalPaginas = Math.ceil(arr.length / MAX_EM_PREPARO);
+        if (paginaAtual.em_preparo >= totalPaginas) paginaAtual.em_preparo = 0;
+        const inicio = paginaAtual.em_preparo * MAX_EM_PREPARO;
+        arr = arr.slice(inicio, inicio + MAX_EM_PREPARO);
+      }
+
       cardsEl.innerHTML = arr.length
         ? arr.map(renderCard).join('')
         : '<div class="painel-col-vazia">—</div>';
-      if (countEl) countEl.textContent = arr.length;
+      if (countEl) countEl.textContent = totalCompleto;
 
-      if (coluna === 'em_preparo') {
-        aplicarPaginacaoEmPreparo(cardsEl, pagEl, arr.length);
-      } else {
-        aplicarLayoutPronto(cardsEl, arr.length);
-      }
+      // EM PREPARO sempre em 2 sub-colunas; PRONTO sempre coluna única
+      cardsEl.classList.toggle('split-2col', coluna === 'em_preparo');
+
+      if (coluna === 'em_preparo') renderPaginacao(pagEl, porColuna.em_preparo.length);
     });
   }
 
   // ── Avança paginação automaticamente (só EM PREPARO) ──────────
   function avancarPaginacao() {
-    const cfg     = COLUNAS.em_preparo;
-    const cardsEl = document.getElementById(cfg.elId);
-    const pagEl   = document.getElementById(cfg.pagId);
-    if (!cardsEl) return;
-    const total = cardsEl.querySelectorAll('.painel-card').length;
-    if (total <= MAX_POR_PAGINA) return;
-    const totalPaginas = Math.ceil(total / MAX_POR_PAGINA);
+    const emPreparoTotal = lastLista.filter(
+      (v) => colunaDeStatus(v.status) === 'em_preparo'
+    ).length;
+    if (emPreparoTotal <= MAX_EM_PREPARO) return;
+    const totalPaginas = Math.ceil(emPreparoTotal / MAX_EM_PREPARO);
     paginaAtual.em_preparo = (paginaAtual.em_preparo + 1) % totalPaginas;
-    aplicarPaginacaoEmPreparo(cardsEl, pagEl, total);
+    render(lastLista);
   }
 
   // ── Polling ────────────────────────────────────────────────────
@@ -224,6 +219,7 @@
       if (error) throw error;
 
       const lista = data || [];
+      lastLista = lista;
       render(lista);
       salvarSnapshot(lista);
       lastOk = Date.now();
@@ -231,7 +227,7 @@
     } catch (err) {
       if (Date.now() - lastOk > CONN_ERROR_MS) setConn('error');
       const snapshot = lerSnapshot();
-      if (snapshot.length) render(snapshot);
+      if (snapshot.length) { lastLista = snapshot; render(snapshot); }
       // eslint-disable-next-line no-console
       console.warn('[painel] fetch falhou:', err?.message || err);
     }
@@ -242,7 +238,7 @@
     if (document.body.dataset.page !== 'painel') return;
 
     const snapshotInicial = lerSnapshot();
-    if (snapshotInicial.length) render(snapshotInicial);
+    if (snapshotInicial.length) { lastLista = snapshotInicial; render(snapshotInicial); }
 
     atualizarRelogio();
     setInterval(atualizarRelogio, 1000);

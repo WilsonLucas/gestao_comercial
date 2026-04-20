@@ -1,10 +1,11 @@
 /* ============================================================
    painel.css — Painel Pedidos (TV)
-   Design tokens v1.3 — otimizado para TV 1920x1080 a 3-6m de distância.
+   Design tokens v1.4 — otimizado para TV 1920x1080 a 3-6m de distância.
    Contraste WCAG AAA nas 2 colunas, tipografia Inter com tabular-nums.
-   Layout v1.3: 2 colunas (EM PREPARO unifica pendente+em_preparo | PRONTO)
-   Card: nome em evidência (grande) + nº do pedido pequeno à frente.
-   PRONTO quebra em 2 sub-colunas quando >=5 cards (.split-2col).
+   Layout v1.4: 2 colunas (EM PREPARO pendente+em_preparo | PRONTO cap 5)
+   EM PREPARO: sempre 2 sub-colunas × 7 linhas (até 14 cards visíveis).
+   PRONTO:     coluna única, máximo 5 cards (FIFO — mais recentes).
+   Card: nome em evidência + nº do pedido pequeno à frente.
    ============================================================ */
 
 .painel-tv {
@@ -25,15 +26,15 @@
   --pronto-ink:     #14532D;
 
   /* ── Tamanhos — tudo em vh/vw para escalar com a TV ────────── */
-  --name-size:        9.5vh;  /* nome em evidência */
-  --num-size:         3vh;    /* nº do pedido discreto na frente */
-  --name-size-split:  6vh;    /* quando PRONTO divide em 2 sub-colunas */
-  --num-size-split:   2.2vh;
+  --name-size:        7vh;    /* nome em evidência (PRONTO — coluna única) */
+  --num-size:         2.4vh;  /* nº do pedido discreto na frente */
+  --name-size-split:  4.8vh;  /* EM PREPARO — 2 sub-colunas × 7 linhas */
+  --num-size-split:   1.9vh;
   --head-size:        3.2vh;
-  --card-gap:         1.6vh;
+  --card-gap:         1.3vh;
   --col-gap:          1.2vw;
-  --col-pad:          1.5vh;
-  --card-pad:         2vh 2.6vh;
+  --col-pad:          1.4vh;
+  --card-pad:         1.6vh 2.2vh;
 
   font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-variant-numeric: tabular-nums;
@@ -241,16 +242,19 @@ body.painel-tv {
   color: var(--pronto-ink);
 }
 
-/* ── PRONTO com >=5 cards: quebra em 2 sub-colunas lado a lado ── */
+/* ── EM PREPARO: 2 sub-colunas × 7 linhas (até 14 cards) ───── */
 .painel-cards.split-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-auto-rows: min-content;
-  align-content: start;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
   column-gap: var(--card-gap);
+  row-gap: 1vh;
+  align-content: stretch;
 }
-.painel-cards.split-2col .painel-card-numero { font-size: var(--num-size-split); }
-.painel-cards.split-2col .painel-card-nome   { font-size: var(--name-size-split); }
+.painel-cards.split-2col .painel-card         { padding: 1.2vh 1.8vh; }
+.painel-cards.split-2col .painel-card-numero  { font-size: var(--num-size-split); }
+.painel-cards.split-2col .painel-card-nome    { font-size: var(--name-size-split); }
 
 /* Flash especial: transição (pendente|em_preparo) → pronto — dura 10s */
 .painel-card.flash-pronto {
