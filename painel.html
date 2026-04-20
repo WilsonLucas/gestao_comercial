@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1920, initial-scale=1.0">
-  <title>Painel do Cliente | Pastelaria Bom Sabor</title>
+  <title>Painel Pedidos | Pastelaria Bom Sabor</title>
 
   <!-- Tipografia Inter (Google Fonts) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,10 +13,11 @@
   <link rel="stylesheet" href="assets/css/painel.css">
 </head>
 <!--
-  Painel do Cliente (TV) — v1.2
+  Painel Pedidos — v1.3
   Página PÚBLICA, read-only, sem autenticação (data-page="painel").
   Carrega apenas supabase-client.js + painel.js — NÃO carrega auth.js,
   app.js nem config.js. Polling 5s em painel_cliente_view.
+  Layout: 2 colunas (EM PREPARO unifica pendente+em_preparo | PRONTO).
 -->
 <body data-page="painel" class="painel-tv">
 
@@ -36,16 +37,7 @@
   </header>
 
   <main class="painel-grid" id="painel-grid">
-    <section class="painel-col col-aguardando" data-status="pendente">
-      <header class="painel-col-head">
-        <h2>AGUARDANDO</h2>
-        <span class="painel-col-count" id="count-pendente" aria-live="polite">0</span>
-      </header>
-      <div class="painel-cards" id="col-pendente"></div>
-      <div class="painel-col-pag" id="pag-pendente" hidden></div>
-    </section>
-
-    <section class="painel-col col-em-preparo" data-status="em_preparo">
+    <section class="painel-col col-em-preparo" data-coluna="em_preparo">
       <header class="painel-col-head">
         <h2>EM PREPARO</h2>
         <span class="painel-col-count" id="count-em-preparo" aria-live="polite">0</span>
@@ -54,25 +46,22 @@
       <div class="painel-col-pag" id="pag-em-preparo" hidden></div>
     </section>
 
-    <section class="painel-col col-pronto" data-status="pronto">
+    <section class="painel-col col-pronto" data-coluna="pronto">
       <header class="painel-col-head">
         <h2>PRONTO</h2>
         <span class="painel-col-count" id="count-pronto" aria-live="polite">0</span>
       </header>
       <div class="painel-cards" id="col-pronto"></div>
-      <div class="painel-col-pag" id="pag-pronto" hidden></div>
     </section>
   </main>
 
   <footer class="painel-footer">
     <span>Aguarde ser chamado</span>
-    <span class="painel-footer-sep">&bull;</span>
-    <span>Pastelaria Bom Sabor</span>
   </footer>
 
   <!-- Aviso apenas para quem abrir em tela pequena durante dev -->
   <div class="painel-dev-warning">
-    <p><strong>Painel TV.</strong> Esta página foi desenhada para TVs 1080p em modo paisagem. Abra em kiosk fullscreen.</p>
+    <p><strong>Painel Pedidos.</strong> Esta página foi desenhada para TVs 1080p em modo paisagem. Abra em kiosk fullscreen.</p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

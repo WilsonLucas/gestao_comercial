@@ -7,7 +7,7 @@ const MENU_POR_PERFIL = {
     ['compras',       'Compras',          'compras.html'],
     ['pdv',           'PDV',              'pdv.html'],
     ['cozinha',       'Cozinha',          'cozinha.html'],
-    ['painel',        'Painel TV',        'painel.html',         '_blank'],
+    ['painel',        'Painel Pedidos',   'painel.html',         '_blank'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
@@ -23,7 +23,7 @@ const MENU_POR_PERFIL = {
     ['inicio',        'Inicio',           'inicio.html'],
     ['pdv',           'PDV',              'pdv.html'],
     ['cozinha',       'Cozinha',          'cozinha.html'],
-    ['painel',        'Painel TV',        'painel.html',         '_blank'],
+    ['painel',        'Painel Pedidos',   'painel.html',         '_blank'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
 };
@@ -138,7 +138,7 @@ const App = (() => {
     const page = document.body.dataset.page;
     if (page === 'login') return;
     if (page === 'cozinha') return;
-    if (page === 'painel') return; // Painel TV v1.2 — página pública, sem shell
+    if (page === 'painel') return; // Painel Pedidos — página pública, sem shell
 
     const usuario = getUsuario();
     if (!usuario) {
