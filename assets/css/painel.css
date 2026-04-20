@@ -252,7 +252,7 @@ body.painel-tv {
   row-gap: 1vh;
   align-content: stretch;
 }
-.painel-cards.split-2col .painel-card         { padding: 1.2vh 1.8vh; }
+.painel-cards.split-2col .painel-card         { padding: 1.2vh 0.9vh; gap: 0.8vh; }
 .painel-cards.split-2col .painel-card-numero  { font-size: var(--num-size-split); }
 .painel-cards.split-2col .painel-card-nome    { font-size: var(--name-size-split); }
 

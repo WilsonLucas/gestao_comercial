@@ -27,6 +27,7 @@
   const MAX_EM_PREPARO   = 14;            // 2 sub-colunas × 7 linhas
   const PAGINA_INTERVAL  = 8000;          // troca de página a cada 8s (quando >14)
   const MAX_PRONTO       = 5;             // cap FIFO — últimos 5 prontos
+  const NAME_MIN_VH      = 2.8;           // piso do shrink-to-fit do nome (legível a 6m)
 
   const COLUNAS = {
     em_preparo: { elId: 'col-em-preparo', countId: 'count-em-preparo', pagId: 'pag-em-preparo' },
@@ -134,6 +135,23 @@
     previousStatuses = new Map(lista.map((v) => [v.id, v.status]));
   }
 
+  // ── Shrink-to-fit do nome por card (preserva grid uniforme) ───
+  // Mede scrollWidth vs clientWidth após o render e reduz font-size
+  // proporcionalmente quando o nome estoura. Piso em NAME_MIN_VH.
+  function ajustarFonteNomes() {
+    const minPx = (NAME_MIN_VH / 100) * window.innerHeight;
+    document.querySelectorAll('.painel-card-nome').forEach((el) => {
+      el.style.fontSize = ''; // reset para o default do CSS antes de medir
+      const scrollW = el.scrollWidth;
+      const clientW = el.clientWidth;
+      if (scrollW <= clientW || clientW === 0) return;
+      const basePx = parseFloat(getComputedStyle(el).fontSize);
+      const ratio  = clientW / scrollW;
+      const newPx  = Math.max(minPx, basePx * ratio * 0.97); // margem 3%
+      el.style.fontSize = newPx + 'px';
+    });
+  }
+
   // ── Paginação de EM PREPARO quando total > MAX_EM_PREPARO ─────
   function renderPaginacao(pagEl, totalCompleto) {
     if (!pagEl) return;
@@ -196,6 +214,8 @@
 
       if (coluna === 'em_preparo') renderPaginacao(pagEl, porColuna.em_preparo.length);
     });
+
+    requestAnimationFrame(ajustarFonteNomes);
   }
 
   // ── Avança paginação automaticamente (só EM PREPARO) ──────────
@@ -246,5 +266,9 @@
     fetchPainel();
     setInterval(fetchPainel,      POLL_MS);
     setInterval(avancarPaginacao, PAGINA_INTERVAL);
+
+    window.addEventListener('resize', () => {
+      requestAnimationFrame(ajustarFonteNomes);
+    });
   });
 })();
