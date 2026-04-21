@@ -1,22 +1,29 @@
 /* ================================================================
-   Painel Cardápio — v1.0
-   Página pública, layout estilo menu clássico (nome ··· preço).
-   Namespace isolado (.cardapio-*) para não colidir com PDV nem painel.
+   Painel Cardápio — v2.0 (TV-first)
+   Página pública para TV 1080p sobre o caixa. Sem scroll:
+   conteúdo dividido em vistas rotativas com crossfade.
+   Namespace isolado (.cardapio-*).
    ================================================================ */
 
 :root {
-  --cardapio-bg:           #fdfbf7;  /* creme quente */
+  --cardapio-bg:           #fdfbf7;
   --cardapio-surface:      #ffffff;
-  --cardapio-ink:          #2b2116;  /* marrom escuro p/ textos */
+  --cardapio-ink:          #2b2116;
   --cardapio-muted:        #7a6b58;
-  --cardapio-accent:       #c0392b;  /* tinta de destaque (preço) */
-  --cardapio-dots:         #cdb892;  /* pontilhado */
+  --cardapio-accent:       #c0392b;
+  --cardapio-dots:         #cdb892;
   --cardapio-border:       #e8dcc4;
+
+  --cardapio-rotacao-ms:   20000ms;
+  --cardapio-fade-ms:      800ms;
 }
 
+/* ── Shell geral: viewport-lock ─────────────────────────────── */
+html, body { height: 100%; }
 .cardapio-body {
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   font-family: Inter, Arial, sans-serif;
   background: var(--cardapio-bg);
   color: var(--cardapio-ink);
@@ -24,23 +31,21 @@
   flex-direction: column;
 }
 
-/* ── Header ─────────────────────────────────────────────────── */
-.cardapio-header {
-  padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 48px) 0;
-}
+/* ── Header (altura fixa) ───────────────────────────────────── */
+.cardapio-header { flex: 0 0 auto; padding: clamp(14px, 2vw, 28px) clamp(24px, 4vw, 56px) 0; }
 .cardapio-header-inner {
-  max-width: 960px;
+  max-width: 1800px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: clamp(16px, 2.5vw, 24px);
+  padding-bottom: clamp(12px, 1.5vw, 20px);
   border-bottom: 2px solid var(--cardapio-border);
 }
-.cardapio-titulo { display: flex; flex-direction: column; gap: 6px; }
+.cardapio-titulo { display: flex; flex-direction: column; gap: 4px; }
 .cardapio-eyebrow {
-  font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+  font-size: clamp(0.75rem, 1vw, 1rem);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--cardapio-muted);
@@ -48,93 +53,154 @@
 }
 .cardapio-titulo h1 {
   margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-size: clamp(1.75rem, 3vw, 3rem);
   font-weight: 900;
   letter-spacing: -0.01em;
   color: var(--cardapio-ink);
+  line-height: 1.05;
 }
 
-/* ── Indicador de atualização ───────────────────────────────── */
+/* Indicador de atualização */
 .cardapio-status {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
-  background: rgba(15, 159, 110, 0.1);
-  font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+  background: rgba(15, 159, 110, 0.12);
+  font-size: clamp(0.8rem, 1vw, 0.95rem);
   color: #0f9f6e;
-  font-weight: 600;
+  font-weight: 700;
 }
 .cardapio-status-dot {
-  width: 8px; height: 8px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   background: #0f9f6e;
   box-shadow: 0 0 0 0 rgba(15, 159, 110, 0.6);
   animation: cardapio-pulse 2s infinite;
 }
 .cardapio-status[data-status="offline"] {
-  background: rgba(214, 69, 69, 0.1);
-  color: var(--danger);
+  background: rgba(214, 69, 69, 0.12);
+  color: var(--danger, #d64545);
 }
 .cardapio-status[data-status="offline"] .cardapio-status-dot {
-  background: var(--danger);
+  background: var(--danger, #d64545);
   animation: none;
 }
 @keyframes cardapio-pulse {
-  0%   { box-shadow: 0 0 0 0   rgba(15, 159, 110, 0.6); }
-  70%  { box-shadow: 0 0 0 10px rgba(15, 159, 110, 0); }
-  100% { box-shadow: 0 0 0 0   rgba(15, 159, 110, 0); }
+  0%   { box-shadow: 0 0 0 0    rgba(15, 159, 110, 0.6); }
+  70%  { box-shadow: 0 0 0 12px rgba(15, 159, 110, 0); }
+  100% { box-shadow: 0 0 0 0    rgba(15, 159, 110, 0); }
 }
 
-/* ── Shell / conteúdo ───────────────────────────────────────── */
+/* ── Shell de conteúdo: ocupa o que sobra, sem scroll ───────── */
 .cardapio-shell {
-  flex: 1;
-  padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 48px);
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(16px, 2vw, 24px) clamp(24px, 4vw, 56px) 0;
 }
-.cardapio-conteudo {
-  max-width: 960px;
+.cardapio-palco {
+  position: relative;
+  width: 100%;
+  max-width: 1800px;
+  height: 100%;
   margin: 0 auto;
 }
+
+/* Progress bar (rotação de vistas) */
+.cardapio-progress {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: rgba(205, 184, 146, 0.25);
+  border-radius: 999px;
+  overflow: hidden;
+  z-index: 2;
+}
+.cardapio-progress-bar {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--cardapio-accent);
+  border-radius: 999px;
+}
+.cardapio-progress[hidden] { display: none; }
+.cardapio-progress.rodando .cardapio-progress-bar {
+  animation: cardapio-progress var(--cardapio-rotacao-ms) linear infinite;
+}
+@keyframes cardapio-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ── Vistas: todas empilhadas, só uma visível por vez ───────── */
+.cardapio-vista {
+  position: absolute;
+  inset: 14px 0 0;                 /* folga para progress bar */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--cardapio-fade-ms) ease;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 clamp(32px, 3vw, 72px);
+  align-content: start;
+  overflow: hidden;                /* salvaguarda contra overflow */
+}
+.cardapio-vista.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .cardapio-loading,
 .cardapio-vazio {
-  text-align: center;
-  padding: 80px 16px;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   color: var(--cardapio-muted);
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+}
+
+/* ── Coluna (wrapper dentro de cada vista) ──────────────────── */
+.cardapio-coluna {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 /* ── Seção por categoria ────────────────────────────────────── */
-.cardapio-secao {
-  margin-bottom: clamp(28px, 4vw, 48px);
-}
+.cardapio-secao + .cardapio-secao { margin-top: clamp(20px, 2.5vw, 36px); }
 .cardapio-secao-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 0 10px;
+  padding: 6px 0 8px;
   border-bottom: 3px double var(--cardapio-border);
-  margin-bottom: clamp(12px, 2vw, 20px);
+  margin-bottom: clamp(8px, 1.2vw, 14px);
 }
 .cardapio-secao-titulo {
   margin: 0;
-  font-size: clamp(1.1rem, 2.6vw, 1.75rem);
+  font-size: clamp(1.3rem, 2.1vw, 2rem);
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   color: var(--cardapio-ink);
   text-transform: uppercase;
+  line-height: 1.1;
 }
 .cardapio-secao-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: clamp(0.7rem, 1.1vw, 0.8rem);
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fff;
+  white-space: nowrap;
 }
 .cardapio-secao-badge.categoria-pastis-salgados { background: #e05c1a; }
 .cardapio-secao-badge.categoria-pastis-doces    { background: #b845a8; }
@@ -143,7 +209,7 @@
 .cardapio-secao-badge.categoria-bebidas         { background: #1a6bbf; }
 .cardapio-secao-badge.categoria-outros          { background: var(--cardapio-muted); }
 
-/* ── Item do cardápio (linha com pontilhado) ────────────────── */
+/* ── Item (linha com pontilhado) ────────────────────────────── */
 .cardapio-lista {
   list-style: none;
   margin: 0;
@@ -153,13 +219,13 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 10px 0;
+  padding: clamp(4px, 0.7vw, 10px) 0;
 }
 .cardapio-item + .cardapio-item {
   border-top: 1px solid rgba(205, 184, 146, 0.35);
 }
 .cardapio-item-nome {
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1.1rem, 1.6vw, 1.55rem);
   font-weight: 600;
   color: var(--cardapio-ink);
   white-space: nowrap;
@@ -173,24 +239,52 @@
   transform: translateY(-4px);
 }
 .cardapio-item-preco {
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1.15rem, 1.7vw, 1.7rem);
   font-weight: 800;
   color: var(--cardapio-accent);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* ── Footer ─────────────────────────────────────────────────── */
+/* ── Footer + indicador de vistas ───────────────────────────── */
 .cardapio-footer {
-  text-align: center;
-  padding: clamp(12px, 2vw, 20px) 16px clamp(20px, 3vw, 32px);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: clamp(10px, 1.5vw, 16px) clamp(24px, 4vw, 56px);
   color: var(--cardapio-muted);
-  font-size: clamp(0.75rem, 1.3vw, 0.9rem);
+  font-size: clamp(0.8rem, 1vw, 1rem);
   font-style: italic;
 }
+.cardapio-footer-dots {
+  display: inline-flex;
+  gap: 10px;
+}
+.cardapio-footer-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(205, 184, 146, 0.5);
+  transition: background 400ms ease, transform 400ms ease;
+}
+.cardapio-footer-dot.active {
+  background: var(--cardapio-accent);
+  transform: scale(1.25);
+}
+.cardapio-footer-dots[hidden] { display: none; }
 
-/* ── Mobile ajustes finos ───────────────────────────────────── */
-@media (max-width: 540px) {
-  .cardapio-header-inner { flex-direction: column; align-items: flex-start; }
-  .cardapio-secao-header { flex-wrap: wrap; }
+/* ── Fallback: telas muito pequenas (dev/mobile) ────────────── */
+@media (max-width: 720px) {
+  .cardapio-body { height: auto; overflow: auto; }
+  .cardapio-shell { overflow: visible; }
+  .cardapio-vista {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .cardapio-vista:not(.active) { display: none; }
+  .cardapio-progress, .cardapio-footer-dots { display: none !important; }
 }
