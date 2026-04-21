@@ -19,16 +19,20 @@
 }
 
 /* ── Shell geral: viewport-lock ─────────────────────────────── */
-html, body { height: 100%; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
 .cardapio-body {
   margin: 0;
   height: 100vh;
+  height: 100dvh;            /* navegadores modernos: respeita barras de URL móveis */
+  max-height: 100vh;
+  max-height: 100dvh;
   overflow: hidden;
   font-family: Inter, Arial, sans-serif;
   background: var(--cardapio-bg);
   color: var(--cardapio-ink);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 /* ── Header (altura fixa) ───────────────────────────────────── */
@@ -95,7 +99,8 @@ html, body { height: 100%; }
 
 /* ── Shell de conteúdo: ocupa o que sobra, sem scroll ───────── */
 .cardapio-shell {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;             /* crítico: permite o shell encolher dentro do flex */
   position: relative;
   overflow: hidden;
   padding: clamp(16px, 2vw, 24px) clamp(24px, 4vw, 56px) 0;
@@ -106,6 +111,7 @@ html, body { height: 100%; }
   max-width: 1800px;
   height: 100%;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* Progress bar (rotação de vistas) */
