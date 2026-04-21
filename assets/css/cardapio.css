@@ -1,0 +1,196 @@
+/* ================================================================
+   Painel Cardápio — v1.0
+   Página pública, layout estilo menu clássico (nome ··· preço).
+   Namespace isolado (.cardapio-*) para não colidir com PDV nem painel.
+   ================================================================ */
+
+:root {
+  --cardapio-bg:           #fdfbf7;  /* creme quente */
+  --cardapio-surface:      #ffffff;
+  --cardapio-ink:          #2b2116;  /* marrom escuro p/ textos */
+  --cardapio-muted:        #7a6b58;
+  --cardapio-accent:       #c0392b;  /* tinta de destaque (preço) */
+  --cardapio-dots:         #cdb892;  /* pontilhado */
+  --cardapio-border:       #e8dcc4;
+}
+
+.cardapio-body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, Arial, sans-serif;
+  background: var(--cardapio-bg);
+  color: var(--cardapio-ink);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.cardapio-header {
+  padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 48px) 0;
+}
+.cardapio-header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: clamp(16px, 2.5vw, 24px);
+  border-bottom: 2px solid var(--cardapio-border);
+}
+.cardapio-titulo { display: flex; flex-direction: column; gap: 6px; }
+.cardapio-eyebrow {
+  font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cardapio-muted);
+  font-weight: 700;
+}
+.cardapio-titulo h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--cardapio-ink);
+}
+
+/* ── Indicador de atualização ───────────────────────────────── */
+.cardapio-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 159, 110, 0.1);
+  font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+  color: #0f9f6e;
+  font-weight: 600;
+}
+.cardapio-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #0f9f6e;
+  box-shadow: 0 0 0 0 rgba(15, 159, 110, 0.6);
+  animation: cardapio-pulse 2s infinite;
+}
+.cardapio-status[data-status="offline"] {
+  background: rgba(214, 69, 69, 0.1);
+  color: var(--danger);
+}
+.cardapio-status[data-status="offline"] .cardapio-status-dot {
+  background: var(--danger);
+  animation: none;
+}
+@keyframes cardapio-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(15, 159, 110, 0.6); }
+  70%  { box-shadow: 0 0 0 10px rgba(15, 159, 110, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(15, 159, 110, 0); }
+}
+
+/* ── Shell / conteúdo ───────────────────────────────────────── */
+.cardapio-shell {
+  flex: 1;
+  padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 48px);
+}
+.cardapio-conteudo {
+  max-width: 960px;
+  margin: 0 auto;
+}
+.cardapio-loading,
+.cardapio-vazio {
+  text-align: center;
+  padding: 80px 16px;
+  color: var(--cardapio-muted);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+/* ── Seção por categoria ────────────────────────────────────── */
+.cardapio-secao {
+  margin-bottom: clamp(28px, 4vw, 48px);
+}
+.cardapio-secao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0 10px;
+  border-bottom: 3px double var(--cardapio-border);
+  margin-bottom: clamp(12px, 2vw, 20px);
+}
+.cardapio-secao-titulo {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.6vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--cardapio-ink);
+  text-transform: uppercase;
+}
+.cardapio-secao-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: clamp(0.7rem, 1.1vw, 0.8rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.cardapio-secao-badge.categoria-pastis-salgados { background: #e05c1a; }
+.cardapio-secao-badge.categoria-pastis-doces    { background: #b845a8; }
+.cardapio-secao-badge.categoria-porcoes         { background: #2a7d4f; }
+.cardapio-secao-badge.categoria-misto-quente    { background: #c4870a; }
+.cardapio-secao-badge.categoria-bebidas         { background: #1a6bbf; }
+.cardapio-secao-badge.categoria-outros          { background: var(--cardapio-muted); }
+
+/* ── Item do cardápio (linha com pontilhado) ────────────────── */
+.cardapio-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cardapio-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+}
+.cardapio-item + .cardapio-item {
+  border-top: 1px solid rgba(205, 184, 146, 0.35);
+}
+.cardapio-item-nome {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 600;
+  color: var(--cardapio-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cardapio-item-dots {
+  flex: 1;
+  min-width: 18px;
+  border-bottom: 2.5px dotted var(--cardapio-dots);
+  transform: translateY(-4px);
+}
+.cardapio-item-preco {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 800;
+  color: var(--cardapio-accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.cardapio-footer {
+  text-align: center;
+  padding: clamp(12px, 2vw, 20px) 16px clamp(20px, 3vw, 32px);
+  color: var(--cardapio-muted);
+  font-size: clamp(0.75rem, 1.3vw, 0.9rem);
+  font-style: italic;
+}
+
+/* ── Mobile ajustes finos ───────────────────────────────────── */
+@media (max-width: 540px) {
+  .cardapio-header-inner { flex-direction: column; align-items: flex-start; }
+  .cardapio-secao-header { flex-wrap: wrap; }
+}

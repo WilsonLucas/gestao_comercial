@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardápio | Pastelaria Bom Sabor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap">
+
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/cardapio.css?v=1.0">
+</head>
+<!--
+  Painel Cardápio — v1.0
+  Página PÚBLICA, read-only, sem autenticação (data-page="cardapio").
+  Carrega apenas supabase-client.js + cardapio.js.
+  Mostra itens ativos com estoque > 0, agrupados por categoria.
+  Layout estilo menu clássico (nome … preço), auto-refresh 60s.
+-->
+<body data-page="cardapio" class="cardapio-body">
+
+  <header class="cardapio-header">
+    <div class="cardapio-header-inner">
+      <div class="cardapio-titulo">
+        <span class="cardapio-eyebrow">Cardápio</span>
+        <h1 id="cardapio-nome-casa">Pastelaria Bom Sabor</h1>
+      </div>
+      <div class="cardapio-status" id="cardapio-status" data-status="ok" title="Atualização automática">
+        <span class="cardapio-status-dot"></span>
+        <span class="cardapio-status-label">Atualizado agora</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="cardapio-shell">
+    <div id="cardapio-conteudo" class="cardapio-conteudo">
+      <p class="cardapio-loading">Carregando cardápio...</p>
+    </div>
+  </main>
+
+  <footer class="cardapio-footer">
+    <span>Preços sujeitos a alteração · Produtos indisponíveis não são exibidos</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/cardapio.js?v=1.0"></script>
+</body>
+</html>

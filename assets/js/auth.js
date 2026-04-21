@@ -1,7 +1,12 @@
 // Páginas públicas (não exigem sessão e não redirecionam para login).
-// - 'login':  tela de autenticação
-// - 'painel': Painel do Cliente exibido na TV (v1.2) — read-only, role anon
-const PUBLIC_PAGES = ['login', 'painel'];
+// - 'login':    tela de autenticação
+// - 'painel':   Painel do Cliente exibido na TV (v1.2) — read-only, role anon
+// - 'cardapio': Painel Cardápio (v1.0) — read-only, role anon
+//
+// Obs: 'cardapio' é página standalone que nem carrega auth.js, então este
+// guard nunca roda lá. Mantemos na whitelist por consistência e segurança
+// defensiva caso auth.js passe a ser incluído no futuro.
+const PUBLIC_PAGES = ['login', 'painel', 'cardapio'];
 
 document.addEventListener('DOMContentLoaded', () => {
   const page = document.body.dataset.page;

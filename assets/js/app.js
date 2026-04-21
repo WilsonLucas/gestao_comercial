@@ -8,6 +8,7 @@ const MENU_POR_PERFIL = {
     ['pdv',           'PDV',              'pdv.html'],
     ['cozinha',       'Cozinha',          'cozinha.html'],
     ['painel',        'Painel Pedidos',   'painel.html',         '_blank'],
+    ['cardapio',      'Painel Cardapio',  'cardapio.html',       '_blank'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
     ['usuarios',      'Usuarios',         'usuarios.html'],
   ],
@@ -17,6 +18,7 @@ const MENU_POR_PERFIL = {
     ['produtos',      'Produtos',         'produtos.html'],
     ['lista-compras', 'Lista de Compras', 'lista-compras.html'],
     ['compras',       'Compras',          'compras.html'],
+    ['cardapio',      'Painel Cardapio',  'cardapio.html',       '_blank'],
     ['financeiro',    'Financeiro',       'financeiro.html'],
   ],
   operador: [
@@ -24,6 +26,7 @@ const MENU_POR_PERFIL = {
     ['pdv',           'PDV',              'pdv.html'],
     ['cozinha',       'Cozinha',          'cozinha.html'],
     ['painel',        'Painel Pedidos',   'painel.html',         '_blank'],
+    ['cardapio',      'Painel Cardapio',  'cardapio.html',       '_blank'],
     ['historico-dia', 'Historico do Dia', 'historico-dia.html'],
   ],
 };
@@ -138,7 +141,8 @@ const App = (() => {
     const page = document.body.dataset.page;
     if (page === 'login') return;
     if (page === 'cozinha') return;
-    if (page === 'painel') return; // Painel Pedidos — página pública, sem shell
+    if (page === 'painel') return;   // Painel Pedidos — página pública, sem shell
+    if (page === 'cardapio') return; // Painel Cardápio — página pública, sem shell
 
     const usuario = getUsuario();
     if (!usuario) {
